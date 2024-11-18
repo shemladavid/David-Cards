@@ -3,7 +3,7 @@ local s,id=GetID()
 function s.initial_effect(c)
     -- ATK Gain on Opponent Taking Battle Damage
     local e1=Effect.CreateEffect(c)
-    e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
+    e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_F)
     e1:SetCode(EVENT_BATTLE_DAMAGE)
     e1:SetRange(LOCATION_MZONE)
     e1:SetCondition(s.atkcon)
@@ -12,7 +12,7 @@ function s.initial_effect(c)
     
     -- Inflict Damage on Opponent's Summon
     local e2=Effect.CreateEffect(c)
-    e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_F)
+    e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
     e2:SetCode(EVENT_SUMMON_SUCCESS)
     e2:SetRange(LOCATION_MZONE)
     e2:SetCondition(s.dmgcon)

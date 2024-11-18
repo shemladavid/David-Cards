@@ -90,7 +90,7 @@ end
 function s.tgcon(e,tp,eg,ep,ev,re,r,rp)
 	local a=Duel.GetAttacker()
 	local d=a:GetBattleTarget()
-	if not d and not a then return false end
+	if not d or not a then return false end
 	return (a:IsControler(tp) and a:IsSetCard(0xe3) and d and d:IsFaceup() and not d:IsControler(tp))
         or (d:IsControler(tp) and d:IsSetCard(0xe3) and a and a:IsFaceup() and not a:IsControler(tp))
 end
