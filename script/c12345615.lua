@@ -193,8 +193,10 @@ function s.repval(e, c)
 	if c:GetControler() ~= e:GetHandlerPlayer() then return false end
     local atk = c:GetAttack()
     local def = c:GetDefense()
-    local new_atk = math.floor(atk * 1.2)
-    local new_def = math.floor(def * 1.2)
+    local new_atk = atk * 1.2
+	local new_def = def * 1.2
+	new_atk = math.ceil(new_atk / 100) * 100
+	new_def = math.ceil(new_def / 100) * 100
     
     -- Increase ATK
     local e1 = Effect.CreateEffect(e:GetHandler())
