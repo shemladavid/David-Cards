@@ -6,6 +6,7 @@ function s.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_CANNOT_NEGATE+EFFECT_FLAG_CANNOT_INACTIVATE+EFFECT_FLAG_CARD_TARGET)
 	e1:SetCode(EVENT_FREE_CHAIN)
+	e1:SetTarget(s.actarget)
 	c:RegisterEffect(e1)
 	--Unnafected by other cards' effects
 	local e2=Effect.CreateEffect(c)
@@ -239,6 +240,15 @@ function s.initial_effect(c)
 	e30:SetValue(s.effectfilter)
 	c:RegisterEffect(e30)
 end
+
+--Set Chain Limit in the Target function
+	function s.actarget(e,tp,eg,ep,ev,re,r,rp,chk)
+		if chk==0 then return true end
+		--Chain limit to prevent opponent's monster effects
+		if e:IsHasType(EFFECT_TYPE_ACTIVATE) then
+			Duel.SetChainLimit(function(te,rp,tp) return false end)
+		end
+	end
 
 function s.efilter(e,te)
 	return te:GetOwner()~=e:GetOwner()
