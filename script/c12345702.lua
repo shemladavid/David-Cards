@@ -39,6 +39,15 @@ function s.initial_effect(c)
 	e3:SetTarget(s.banishtg)
 	e3:SetOperation(s.banishop)
 	c:RegisterEffect(e3)
+	--Allow tributing Level 7 or higher Winged Beast monsters using 1 tribute
+	local e4=Effect.CreateEffect(c)
+	e4:SetType(EFFECT_TYPE_FIELD)
+	e4:SetCode(EFFECT_DECREASE_TRIBUTE)
+	e4:SetRange(LOCATION_MZONE)
+	e4:SetTargetRange(LOCATION_HAND,0)
+	e4:SetTarget(aux.TargetBoolFunction(Card.IsRace,RACE_WINGEDBEAST))
+	e4:SetValue(0x1)
+	c:RegisterEffect(e4)
 end
 s.listed_series={0x16f}
 function s.trsumcon(e,tp,eg,ep,ev,re,r,rp)
