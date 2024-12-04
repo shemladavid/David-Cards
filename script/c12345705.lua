@@ -15,26 +15,32 @@ function s.initial_effect(c)
 
     -- While in GY, monsters your opponent controls with Maiden Counter must attack "Maiden In Love"
     local e2 = Effect.CreateEffect(c)
-    e2:SetType(EFFECT_TYPE_FIELD + EFFECT_TYPE_CONTINUOUS)
-    e2:SetCode(EVENT_ATTACK_ANNOUNCE)
+    e2:SetType(EFFECT_TYPE_FIELD)
+    e2:SetCode(EFFECT_MUST_ATTACK_MONSTER)
     e2:SetRange(LOCATION_GRAVE)
-    e2:SetCondition(s.attackcon)
-    e2:SetOperation(s.attackop)
+    e2:SetTargetRange(0, LOCATION_MZONE)
+    e2:SetValue(aux.TargetBoolFunction(Card.IsCode, 100000139))
     c:RegisterEffect(e2)
 
-    -- While in GY, monsters your opponent controls with Maiden Counter cannot activate their effects
+    -- While in GY, monsters your opponent controls with Maiden Counter have their effects negated
     local e3 = Effect.CreateEffect(c)
     e3:SetType(EFFECT_TYPE_FIELD)
-    e3:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
-    e3:SetCode(EFFECT_CANNOT_ACTIVATE)
+    e3:SetCode(EFFECT_DISABLE)
     e3:SetRange(LOCATION_GRAVE)
-    e3:SetTargetRange(0, LOCATION_MZONE) -- Applies to opponent's monsters
-    e3:SetCondition(s.gycon) -- Only active while in GY
-    e3:SetValue(s.aclimit)
+    e3:SetTargetRange(0,LOCATION_MZONE)
+    e3:SetTarget(s.disableTarget)
     c:RegisterEffect(e3)
+
+    --Cannot banish
+	local e4=Effect.CreateEffect(c)
+	e4:SetType(EFFECT_TYPE_FIELD)
+	e4:SetCode(EFFECT_CANNOT_REMOVE)
+	e4:SetRange(LOCATION_GRAVE)
+	e4:SetTargetRange(LOCATION_GRAVE,0)
+	c:RegisterEffect(e4)
 end
 s.listed_names = {100000139}
-
+s.counter_place_list = {0x1090, 0x90}
 function s.thcost(e, tp, eg, ep, ev, re, r, rp, chk)
     if chk == 0 then
         return e:GetHandler():IsDiscardable()
@@ -43,7 +49,7 @@ function s.thcost(e, tp, eg, ep, ev, re, r, rp, chk)
 end
 
 function s.thfilter(c)
-    return (c:IsType(TYPE_EQUIP) or c:IsCode(100000139) or c:ListsCode(100000139)) and c:IsAbleToHand()
+    return (c:IsCode(100000139) or c:ListsCode(100000139)) and c:IsAbleToHand()
 end
 
 function s.thtg(e, tp, eg, ep, ev, re, r, rp, chk)
@@ -85,8 +91,6 @@ function s.gycon(e)
     return e:GetHandler():IsLocation(LOCATION_GRAVE)
 end
 
-function s.aclimit(e, re, tp)
-    -- Check if the card activating the effect has Maiden Counter
-    local rc = re:GetHandler()
-    return rc:GetFlagEffect(100000139) > 0
+function s.disableTarget(e,c)
+    return c:IsType(TYPE_MONSTER) and c:IsFaceup() and (c:GetCounter(0X1090)>0 or c:GetCounter(0x90)>0)
 end

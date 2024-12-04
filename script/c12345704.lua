@@ -47,7 +47,7 @@ function s.thcost(e, tp, eg, ep, ev, re, r, rp, chk)
     Duel.SendtoGrave(e:GetHandler(), REASON_COST + REASON_DISCARD)
 end
 function s.thfilter(c)
-    return (c:IsType(TYPE_EQUIP) or c:IsCode(100000139) or c:ListsCode(100000139)) and c:IsAbleToHand()
+    return (c:IsCode(100000139) or c:ListsCode(100000139)) and c:IsAbleToHand()
 end
 function s.thtg(e, tp, eg, ep, ev, re, r, rp, chk)
     if chk == 0 then
