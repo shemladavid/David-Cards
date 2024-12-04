@@ -18,21 +18,17 @@ function s.initial_effect(c)
     e2:SetValue(1)
     c:RegisterEffect(e2)
 
-    -- Place Maiden Counter when opponent summons, flips, or special summons a monster
-    local e3 = Effect.CreateEffect(c)
-    e3:SetType(EFFECT_TYPE_FIELD + EFFECT_TYPE_CONTINUOUS)
-    e3:SetCode(EVENT_SUMMON_SUCCESS)
-    e3:SetRange(LOCATION_FZONE)
-    e3:SetCondition(s.maiden_counter_condition)
-    e3:SetOperation(s.maiden_counter_operation)
-    c:RegisterEffect(e3)
-    local e4=e3:Clone()
-	e4:SetCode(EVENT_FLIP_SUMMON_SUCCESS)
-	c:RegisterEffect(e4)
-    local e5=e3:Clone()
-    local e5 = Effect.CreateEffect(c)
-    e5:SetCode(EVENT_SPSUMMON_SUCCESS)
-    c:RegisterEffect(e5)
+    -- Place Maiden Counter when opponent Summons, Flip Summons, or Special Summons a monster
+    local events = {EVENT_SPSUMMON_SUCCESS, EVENT_FLIP_SUMMON_SUCCESS, EVENT_SUMMON_SUCCESS}
+    for _, event in ipairs(events) do
+        local e3 = Effect.CreateEffect(c)
+        e3:SetType(EFFECT_TYPE_FIELD + EFFECT_TYPE_CONTINUOUS)
+        e3:SetCode(event)
+        e3:SetRange(LOCATION_FZONE)
+        e3:SetCondition(s.maiden_counter_condition)
+        e3:SetOperation(s.maiden_counter_operation)
+        c:RegisterEffect(e3)
+    end
 
     -- Take control of monsters with Maiden Counter (once per turn, quick effect)
     local e6 = Effect.CreateEffect(c)
