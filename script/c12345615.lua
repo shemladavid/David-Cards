@@ -151,7 +151,6 @@ function s.flipop(e,tp,eg,ep,ev,re,r,rp)
 	e16:SetTargetRange(1,0)
 	e16:SetValue(s.effectfilter)
 	Duel.RegisterEffect(e16,tp)
-
 	local e17=Effect.CreateEffect(c)
 	e17:SetType(EFFECT_TYPE_FIELD)
 	e17:SetCode(EFFECT_CANNOT_DISEFFECT)

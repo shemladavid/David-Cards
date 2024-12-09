@@ -40,6 +40,7 @@ function s.initial_effect(c)
     e6:SetProperty(EFFECT_FLAG_CARD_TARGET)
 	e6:SetHintTiming(0,TIMING_MAIN_END|TIMING_END_PHASE)
     e6:SetCountLimit(1)
+    e6:SetCondition(s.control_condition)
     e6:SetTarget(s.control_target)
     e6:SetOperation(s.control_operation)
     c:RegisterEffect(e6)
@@ -51,7 +52,6 @@ function s.initial_effect(c)
     e7:SetType(EFFECT_TYPE_IGNITION)
     e7:SetProperty(EFFECT_FLAG_CARD_TARGET)
     e7:SetRange(LOCATION_FZONE)
-    e7:SetCountLimit(1)
     e7:SetCondition(s.lp_gain_condition)
     e7:SetTarget(s.lp_gain_target)
     e7:SetOperation(s.lp_gain_operation)
@@ -96,20 +96,14 @@ function s.maiden_counter_operation(e, tp, eg, ep, ev, re, r, rp)
     end
 end
 
--- Condition to control monsters with Maiden Counter
-function s.control_condition(e, tp, eg, ep, ev, re, r, rp)
-    return Duel.IsExistingMatchingCard(s.maiden_counter_filter, tp, LOCATION_MZONE, 0, 1, nil) and
-               Duel.GetLocationCount(tp, LOCATION_MZONE) > 0
-end
-
--- Filter to identify monsters with Maiden Counter
-function s.maiden_counter_filter(c)
-    return c:IsFaceup() and c:GetCounter(0x1090) > 0
-end
-
 -- Filter to identify monsters with Maiden Counter
 function s.control_filter(c)
     return c:IsFaceup() and c:GetCounter(0x1090) > 0
+end
+
+-- Condition: Check if there is an open Monster Zone
+function s.control_condition(e, tp, eg, ep, ev, re, r, rp)
+    return Duel.GetLocationCount(tp, LOCATION_MZONE) > 0
 end
 
 -- Target for taking control of monsters with Maiden Counter
