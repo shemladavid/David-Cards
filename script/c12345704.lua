@@ -63,6 +63,9 @@ function s.thop(e, tp, eg, ep, ev, re, r, rp)
         Duel.SendtoHand(g, nil, REASON_EFFECT)
         Duel.ConfirmCards(1 - tp, g)
     end
+    -- Create the card '99900009' in the GY
+    local token = Duel.CreateToken(tp, 99900009)
+    Duel.SendtoGrave(token, REASON_EFFECT)
 end
 
 function s.dmgcon(e)
