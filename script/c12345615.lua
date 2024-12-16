@@ -158,6 +158,14 @@ function s.flipop(e,tp,eg,ep,ev,re,r,rp)
 	e17:SetTargetRange(1,0)
 	e17:SetValue(s.effectfilter)
 	Duel.RegisterEffect(e17,tp)
+	-- Prevent Tributing
+	local e18=Effect.CreateEffect(c)
+	e18:SetType(EFFECT_TYPE_FIELD)
+	e18:SetCode(EFFECT_CANNOT_RELEASE)
+	e18:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
+	e18:SetTargetRange(0,1)
+    e18:SetTarget(s.releaseTarget)
+	Duel.RegisterEffect(e18,tp)
 end
 
 function s.atkcon(e)
@@ -299,4 +307,8 @@ end
 function s.effectfilter(e,ct)
 	local te,tp,loc=Duel.GetChainInfo(ct,CHAININFO_TRIGGERING_EFFECT,CHAININFO_TRIGGERING_PLAYER,CHAININFO_TRIGGERING_LOCATION)
 	return tp==e:GetHandlerPlayer() and loc&LOCATION_ONFIELD~=0
+end
+
+function s.releaseTarget(e,c)
+    return c:IsControler(e:GetHandlerPlayer())
 end
