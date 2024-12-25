@@ -8,7 +8,6 @@ function s.initial_effect(c)
     c:RegisterEffect(e1)
     local e10=Effect.CreateEffect(c)
 	e10:SetOperation(s.actb)
-	e10:SetCost(s.descost)
 	e10:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_F)
 	e10:SetCode(EVENT_PHASE+PHASE_STANDBY)
 	e10:SetRange(LOCATION_DECK)
@@ -20,13 +19,11 @@ function s.initial_effect(c)
 	e20:SetRange(LOCATION_HAND)
 	e20:SetCode(EVENT_PHASE+PHASE_STANDBY)
 	e20:SetOperation(s.actb)
-	e20:SetCost(s.descost)
 	e20:SetProperty(EFFECT_FLAG_CARD_TARGET+EFFECT_FLAG_CANNOT_DISABLE)
 	c:RegisterEffect(e20)
 	--actgrave
 	local e30=Effect.CreateEffect(c)
 	e30:SetOperation(s.actb)
-	e30:SetCost(s.descost)
 	e30:SetRange(LOCATION_GRAVE)
 	e30:SetCode(EVENT_PHASE+PHASE_STANDBY)
 	e30:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_F)
@@ -35,7 +32,6 @@ function s.initial_effect(c)
 	--actremoved
 	local e40=Effect.CreateEffect(c)
 	e40:SetOperation(s.actb)
-	e40:SetCost(s.descost)
 	e40:SetRange(LOCATION_REMOVED)
 	e40:SetCode(EVENT_PHASE+PHASE_STANDBY)
 	e40:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_F)
@@ -72,11 +68,6 @@ end
 function s.actb(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():GetActivateEffect():IsActivatable(tp) end
 		Duel.MoveToField(e:GetHandler(),tp,tp,LOCATION_FZONE,POS_FACEUP,REASON_EFFECT,true)
-end
-
-function s.descost(e,tp,eg,ep,ev,re,r,rp,chk)
-	if chk==0 then return Duel.GetFlagEffect(tp,id)==0 end
-	Duel.RegisterFlagEffect(tp,id,0,0,0)
 end
 
 function s.diceop(e,tp,eg,ep,ev,re,r,rp)
