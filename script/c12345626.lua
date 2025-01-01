@@ -30,7 +30,7 @@ function s.initial_effect(c)
     e2:SetOperation(s.tdop)
     c:RegisterEffect(e2)
     
-    --"Unchained" monsters gain ATK
+    --"Unchained" monsters gain 500 ATK
     local e3=Effect.CreateEffect(c)
     e3:SetType(EFFECT_TYPE_FIELD)
     e3:SetCode(EFFECT_UPDATE_ATTACK)
