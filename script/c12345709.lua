@@ -17,7 +17,7 @@ function s.initial_effect(c)
     e2:SetValue(500)
     c:RegisterEffect(e2)
 
-    --actlimit
+    --actlimit on battle
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_FIELD)
 	e3:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
@@ -28,28 +28,39 @@ function s.initial_effect(c)
 	e3:SetCondition(s.actcon)
 	c:RegisterEffect(e3)
 
-    --add to hand
+	--remove
 	local e4=Effect.CreateEffect(c)
-	e4:SetCategory(CATEGORY_TOHAND)
-	e4:SetType(EFFECT_TYPE_IGNITION)
+	e4:SetType(EFFECT_TYPE_FIELD)
+	e4:SetProperty(EFFECT_FLAG_SET_AVAILABLE+EFFECT_FLAG_IGNORE_RANGE+EFFECT_FLAG_IGNORE_IMMUNE)
+	e4:SetCode(EFFECT_TO_GRAVE_REDIRECT)
 	e4:SetRange(LOCATION_FZONE)
-	e4:SetCountLimit(1,id)
-	e4:SetTarget(s.thtg)
-	e4:SetOperation(s.thop)
+	e4:SetTargetRange(0,0xff)
+	e4:SetValue(LOCATION_REMOVED)
+	e4:SetTarget(s.bantg)
 	c:RegisterEffect(e4)
 
-    --Banish cards from the opponent's deck
+    --add to hand
 	local e5=Effect.CreateEffect(c)
-	e5:SetDescription(aux.Stringid(id,2))
-	e5:SetCategory(CATEGORY_REMOVE)
-	e5:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
-	e5:SetCode(EVENT_REMOVE)
+	e5:SetCategory(CATEGORY_TOHAND)
+	e5:SetType(EFFECT_TYPE_IGNITION)
 	e5:SetRange(LOCATION_FZONE)
-	e5:SetProperty(EFFECT_FLAG_DELAY)
-	e5:SetCountLimit(1,{id,1})
-	e5:SetCondition(s.rmcon)
-    e5:SetOperation(s.rmop)
+	e5:SetCountLimit(1,id)
+	e5:SetTarget(s.thtg)
+	e5:SetOperation(s.thop)
 	c:RegisterEffect(e5)
+
+    --Banish cards from the opponent's deck
+	local e6=Effect.CreateEffect(c)
+	e6:SetDescription(aux.Stringid(id,2))
+	e6:SetCategory(CATEGORY_REMOVE)
+	e6:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
+	e6:SetCode(EVENT_REMOVE)
+	e6:SetRange(LOCATION_FZONE)
+	e6:SetProperty(EFFECT_FLAG_DELAY)
+	e6:SetCountLimit(1,{id,1})
+	e6:SetCondition(s.rmcon)
+    e6:SetOperation(s.rmop)
+	c:RegisterEffect(e6)
 end
 s.listed_series={0x122}
 
@@ -63,8 +74,12 @@ function s.actcon(e)
 	return (a and s.actfilter(a,tp)) or (d and s.actfilter(d,tp))
 end
 
+function s.bantg(e,c)
+	return c:GetOwner()~=e:GetHandlerPlayer() and Duel.IsPlayerCanRemove(e:GetHandlerPlayer(),c)
+end
+
 function s.thfilter(c)
-	return c:IsSetCard(0x122) and c:IsAbleToHand()
+	return (c:IsSetCard(0x122) or c:ListsArchetype(0x122)) and c:IsAbleToHand()
 end
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_GRAVE+LOCATION_DECK,0,1,nil) end

@@ -79,7 +79,7 @@ end
 
 --Add "Tenyi" or card mentioning it
 function s.thfilter(c)
-	return c:IsSetCard(0x12c) or c:ListsCode(0x12c) and c:IsAbleToHand()
+	return (c:IsSetCard(0x12c) or c:ListsArchetype(0x12c) or c:IsRace(RACE_WYRM)) and c:IsAbleToHand()
 end
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_DECK+LOCATION_GRAVE+LOCATION_REMOVED,0,1,nil) end
