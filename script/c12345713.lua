@@ -35,7 +35,7 @@ end
 function s.banishtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then 
 		return Duel.IsExistingMatchingCard(aux.TRUE,tp,LOCATION_GRAVE,LOCATION_GRAVE,1,nil) 
-			and Duel.GetFieldGroupCount(tp,0,LOCATION_HAND)>0
+			or Duel.GetFieldGroupCount(tp,0,LOCATION_HAND)>0
 	end
 	Duel.SetOperationInfo(0,CATEGORY_REMOVE,nil,1,PLAYER_ALL,LOCATION_GRAVE)
 	Duel.SetOperationInfo(0,CATEGORY_REMOVE,nil,1,1-tp,LOCATION_HAND)
@@ -78,7 +78,7 @@ function s.nsfilter(c)
 	return c:IsRace(RACE_WINGEDBEAST) and c:IsSummonable(true,nil)
 end
 
--- Prevent activation of effects of banished cards
+-- Prevent activation of effects of opponent's banished cards
 function s.aclimit(e,re,tp)
-	return re:IsActiveType(TYPE_SPELL+TYPE_TRAP+TYPE_MONSTER) and re:IsLocation(LOCATION_REMOVED)
+	return re:IsActiveType(TYPE_SPELL+TYPE_TRAP+TYPE_MONSTER) and re:GetHandler():IsLocation(LOCATION_REMOVED) and re:GetHandlerPlayer()~=tp
 end
