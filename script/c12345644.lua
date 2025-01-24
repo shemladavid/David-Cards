@@ -10,7 +10,7 @@ function s.initial_effect(c)
     -- Attach cards from opponent's deck when materials are detached
     local e2=Effect.CreateEffect(c)
     e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
-    e2:SetCode(EVENT_OVERLAY_REMOVE)
+    e2:SetCode(EVENT_DETACH_MATERIAL)
     e2:SetRange(LOCATION_SZONE)
     e2:SetCondition(s.matcon)
     e2:SetTarget(s.mattg)
@@ -25,7 +25,9 @@ end
 
 function s.mattg(e,tp,eg,ep,ev,re,r,rp,chk)
     if chk==0 then return true end
-    Duel.SetOperationInfo(0,CATEGORY_ATTACH,nil,1,1-tp,LOCATION_DECK)
+    local rc=eg:GetFirst()
+    local g=Duel.GetDecktopGroup(1-tp,1)
+    Duel.SetOperationInfo(0,CATEGORY_ATTACH,g,1,1-tp,LOCATION_DECK)
 end
 
 function s.matop(e,tp,eg,ep,ev,re,r,rp)
