@@ -10,7 +10,7 @@ function s.initial_effect(c)
     -- Attach opponent's deck cards
     local e2 = Effect.CreateEffect(c)
     e2:SetDescription(aux.Stringid(id, 0))
-    e2:SetType(EFFECT_TYPE_FIELD + EFFECT_TYPE_TRIGGER_O)
+    e2:SetType(EFFECT_TYPE_FIELD + EFFECT_TYPE_TRIGGER_F)
     e2:SetCode(EVENT_DETACH_MATERIAL)
     e2:SetProperty(EFFECT_FLAG_DELAY)
     e2:SetRange(LOCATION_SZONE)
@@ -36,8 +36,7 @@ function s.operation(e, tp, eg, ep, ev, re, r, rp)
     if Duel.GetFieldGroupCount(tp, 0, LOCATION_DECK) == 0 then
         return
     end
-    local g = Duel.GetDecktopGroup(1 - tp, math.min(deck_count, 2))
-    Debug.Message("#g: " .. #g) -- Prints the size of the group to the console
+    local g = Duel.GetDecktopGroup(1 - tp, 2)
     if #g > 0 then
         Duel.Overlay(tc, g)
         Duel.Recover(tp, #g * 1000, REASON_EFFECT)
