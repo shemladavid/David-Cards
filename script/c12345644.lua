@@ -1,48 +1,45 @@
---Xyz Free
-local s,id=GetID()
+-- Xyz Free
+local s, id = GetID()
 function s.initial_effect(c)
     -- Activate
-    local e1=Effect.CreateEffect(c)
+    local e1 = Effect.CreateEffect(c)
     e1:SetType(EFFECT_TYPE_ACTIVATE)
     e1:SetCode(EVENT_FREE_CHAIN)
     c:RegisterEffect(e1)
 
-    -- Attach cards from opponent's deck when materials are detached
-    local e2=Effect.CreateEffect(c)
-    e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
+    -- Attach opponent's deck cards
+    local e2 = Effect.CreateEffect(c)
+    e2:SetDescription(aux.Stringid(id, 0))
+    e2:SetType(EFFECT_TYPE_FIELD + EFFECT_TYPE_TRIGGER_O)
     e2:SetCode(EVENT_DETACH_MATERIAL)
+    e2:SetProperty(EFFECT_FLAG_DELAY)
     e2:SetRange(LOCATION_SZONE)
-    e2:SetCondition(s.matcon)
-    e2:SetTarget(s.mattg)
-    e2:SetOperation(s.matop)
+    e2:SetCondition(s.condition)
+    e2:SetTarget(s.target)
+    e2:SetOperation(s.operation)
     c:RegisterEffect(e2)
 end
 
-function s.matcon(e,tp,eg,ep,ev,re,r,rp)
-    local rc=eg:GetFirst()
+function s.condition(e, tp, eg, ep, ev, re, r, rp)
+    local rc = eg:GetFirst()
     return rc:IsControler(tp) and rc:IsType(TYPE_XYZ) and eg:IsContains(rc)
 end
 
-function s.mattg(e,tp,eg,ep,ev,re,r,rp,chk)
-    if chk==0 then return true end
-    local rc=eg:GetFirst()
-    local g=Duel.GetDecktopGroup(1-tp,1)
-    Duel.SetOperationInfo(0,CATEGORY_ATTACH,g,1,1-tp,LOCATION_DECK)
+function s.target(e, tp, eg, ep, ev, re, r, rp, chk)
+    if chk == 0 then
+        return Duel.GetFieldGroupCount(tp, 0, LOCATION_DECK) > 0
+    end
 end
 
-function s.matop(e,tp,eg,ep,ev,re,r,rp)
-    local rc=eg:GetFirst()
-    if rc:IsRelateToEffect(re) then
-        local g=Duel.GetDecktopGroup(1-tp,1)
-        local ct=0
-        while #g>0 do
-            Duel.DisableShuffleCheck()
-            Duel.Overlay(rc,g)
-            ct=ct+1
-            g=Duel.GetDecktopGroup(1-tp,1)
-        end
-        if ct>0 then
-            Duel.Recover(tp,1000*ct,REASON_EFFECT)
-        end
+function s.operation(e, tp, eg, ep, ev, re, r, rp)
+    local tc = eg:GetFirst()
+    if Duel.GetFieldGroupCount(tp, 0, LOCATION_DECK) == 0 then
+        return
+    end
+    local g = Duel.GetDecktopGroup(1 - tp, math.min(deck_count, 2))
+    Debug.Message("#g: " .. #g) -- Prints the size of the group to the console
+    if #g > 0 then
+        Duel.Overlay(tc, g)
+        Duel.Recover(tp, #g * 1000, REASON_EFFECT)
     end
 end
