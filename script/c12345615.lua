@@ -41,14 +41,6 @@ function s.flipop(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetTargetRange(LOCATION_MZONE,0)
 	e1:SetValue(500)
 	Duel.RegisterEffect(e1,tp)
-	-- Target restriction
-	local e2=Effect.CreateEffect(c)
-	e2:SetType(EFFECT_TYPE_FIELD)
-	e2:SetCode(EFFECT_CANNOT_SELECT_BATTLE_TARGET)
-	e2:SetTargetRange(0,LOCATION_MZONE)
-	e2:SetCondition(s.atkcon)
-	e2:SetValue(s.atklimit)
-	Duel.RegisterEffect(e2,tp)
 	-- Indestructible count
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_FIELD)
@@ -172,10 +164,6 @@ function s.atkcon(e)
 	return Duel.IsExistingMatchingCard(aux.FaceupFilter(Card.IsAttackPos),e:GetHandlerPlayer(),LOCATION_MZONE,0,2,nil)
 end
 
-function s.atklimit(e,c)
-	return c~=e:GetHandlerPlayer() and c:IsAttackPos() and c:GetAttack()~=Duel.GetFieldGroup(e:GetHandlerPlayer(),LOCATION_MZONE,0):GetMaxGroup(Card.GetAttack):GetFirst():GetAttack()
-end
-
 function s.indct(e,re,r,rp)
 	if (r&REASON_EFFECT~=0 or r&REASON_BATTLE~=0) and rp~=e:GetHandlerPlayer() then
 		return 1
@@ -200,15 +188,17 @@ function s.repval(e, c)
 	if c:GetControler() ~= e:GetHandlerPlayer() then return false end
     local atk = c:GetAttack()
     local def = c:GetDefense()
-    local new_atk = atk * 1.2
-	local new_def = def * 1.2
-	new_atk = math.ceil(new_atk / 100) * 100
-	new_def = math.ceil(new_def / 100) * 100
-    
+    local atk_increase = atk * 1.2
+	local def_increase = def * 1.2
+	atk_increase = math.ceil(atk_increase / 100) * 100
+	def_increase = math.ceil(def_increase / 100) * 100
+    new_atk = atk_increase - atk
+	new_def = def_increase - def
+
     -- Increase ATK
     local e1 = Effect.CreateEffect(e:GetHandler())
     e1:SetType(EFFECT_TYPE_SINGLE)
-    e1:SetCode(EFFECT_SET_ATTACK_FINAL)
+    e1:SetCode(EFFECT_UPDATE_ATTACK)
     e1:SetValue(new_atk)
     e1:SetReset(RESET_EVENT + RESETS_STANDARD)
     c:RegisterEffect(e1)
@@ -216,7 +206,7 @@ function s.repval(e, c)
     -- Increase DEF
     local e2 = Effect.CreateEffect(e:GetHandler())
     e2:SetType(EFFECT_TYPE_SINGLE)
-    e2:SetCode(EFFECT_SET_DEFENSE_FINAL)
+    e2:SetCode(EFFECT_UPDATE_DEFENSE)
     e2:SetValue(new_def)
     e2:SetReset(RESET_EVENT + RESETS_STANDARD)
     c:RegisterEffect(e2)

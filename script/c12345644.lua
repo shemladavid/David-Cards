@@ -28,9 +28,19 @@ function s.initial_effect(c)
     e3:SetRange(LOCATION_SZONE)
     e3:SetCountLimit(1)
     e3:SetProperty(EFFECT_FLAG_CARD_TARGET)
+    e3:SetCondition(s.descon)
     e3:SetTarget(s.destg)
     e3:SetOperation(s.desop)
     c:RegisterEffect(e3)
+
+    -- Continuous effect to attach top 3 cards of opponent's deck to an Xyz Monster with no materials
+    local e4 = Effect.CreateEffect(c)
+    e4:SetType(EFFECT_TYPE_FIELD + EFFECT_TYPE_CONTINUOUS)
+    e4:SetCode(EVENT_ADJUST)
+    e4:SetRange(LOCATION_SZONE)
+    e4:SetCondition(s.xyzcondition)
+    e4:SetOperation(s.xyzoperation)
+    c:RegisterEffect(e4)
 end
 
 function s.condition(e, tp, eg, ep, ev, re, r, rp)
@@ -39,15 +49,15 @@ end
 
 function s.target(e, tp, eg, ep, ev, re, r, rp, chk)
     if chk == 0 then
-        return Duel.GetFieldGroupCount(tp, 0, LOCATION_DECK) >= 2
+        return Duel.GetFieldGroupCount(tp, 0, LOCATION_DECK) >= 3
     end
 end
 
 function s.operation(e, tp, eg, ep, ev, re, r, rp)
-    local g = Duel.GetDecktopGroup(1 - tp, 2) -- Get the top 2 cards of opponent's deck
+    local g = Duel.GetDecktopGroup(1 - tp, 3) -- Get the top 3 cards of opponent's deck
     if #g == 0 then return end
 
-    -- Attach 2 new cards for each Xyz monster involved
+    -- Attach 3 new cards for each Xyz monster involved
     local processed = Group.CreateGroup() -- Track monsters that have already received cards
     for tc in aux.Next(eg) do
         if tc:IsControler(tp) and tc:IsType(TYPE_XYZ) and not processed:IsContains(tc) then
@@ -55,11 +65,19 @@ function s.operation(e, tp, eg, ep, ev, re, r, rp)
             Duel.Recover(tp, #g * 1000, REASON_EFFECT) -- Recover life points
             processed:AddCard(tc) -- Mark this monster as processed
 
-            -- Refresh the top 2 cards for the next monster
-            g = Duel.GetDecktopGroup(1 - tp, 2)
+            -- Refresh the top 3 cards for the next monster
+            g = Duel.GetDecktopGroup(1 - tp, 3)
             if #g == 0 then break end
         end
     end
+end
+
+function s.descon(e, tp, eg, ep, ev, re, r, rp)
+    local oppHasCard = Duel.IsExistingMatchingCard(nil, tp, 0, LOCATION_ONFIELD, 1, nil)
+    local hasXyzWithOverlay = Duel.IsExistingMatchingCard(function(c) 
+        return c:IsFaceup() and c:IsType(TYPE_XYZ) and c:GetOverlayCount() > 0 
+    end, tp, LOCATION_MZONE, 0, 1, nil)
+    return oppHasCard and hasXyzWithOverlay
 end
 
 function s.destg(e, tp, eg, ep, ev, re, r, rp, chk, chkc)
@@ -77,6 +95,25 @@ function s.desop(e, tp, eg, ep, ev, re, r, rp)
         if xyz and xyz:CheckRemoveOverlayCard(tp, 1, REASON_EFFECT) then
             xyz:RemoveOverlayCard(tp, 1, 1, REASON_EFFECT)
             Duel.Destroy(tc, REASON_EFFECT)
+        end
+    end
+end
+
+-- Condition to check if you control an Xyz Monster with no materials
+function s.xyzcondition(e, tp, eg, ep, ev, re, r, rp)
+    local g = Duel.GetMatchingGroup(function(c) return c:IsType(TYPE_XYZ) and c:GetOverlayCount() == 0 end, tp, LOCATION_MZONE, 0, nil)
+    return #g > 0 and Duel.GetFieldGroupCount(tp, 0, LOCATION_DECK) >= 3
+end
+
+-- Operation to attach the top 3 cards of the opponent's deck to the Xyz Monster
+function s.xyzoperation(e, tp, eg, ep, ev, re, r, rp)
+    local g = Duel.GetMatchingGroup(function(c) return c:IsType(TYPE_XYZ) and c:GetOverlayCount() == 0 end, tp, LOCATION_MZONE, 0, nil)
+    if #g > 0 then
+        local xyz = g:GetFirst()
+        local deck_g = Duel.GetDecktopGroup(1 - tp, 3) -- Get the top 3 cards of opponent's deck
+        if #deck_g > 0 then
+            Duel.DisableShuffleCheck()
+            Duel.Overlay(xyz, deck_g) -- Attach the cards to the Xyz monster
         end
     end
 end
