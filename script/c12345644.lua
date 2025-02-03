@@ -41,6 +41,19 @@ function s.initial_effect(c)
     e4:SetCondition(s.xyzcondition)
     e4:SetOperation(s.xyzoperation)
     c:RegisterEffect(e4)
+
+    -- All monsters on the field are treated as all types and attributes
+    local e5=Effect.CreateEffect(c)
+    e5:SetType(EFFECT_TYPE_FIELD)
+    e5:SetCode(EFFECT_CHANGE_RACE)
+    e5:SetRange(LOCATION_SZONE)
+    e5:SetTargetRange(LOCATION_MZONE,LOCATION_MZONE)
+    e5:SetValue(0xfffffff)
+    c:RegisterEffect(e5)
+    local e6=e5:Clone()
+    e6:SetCode(EFFECT_CHANGE_ATTRIBUTE)
+    e6:SetValue(0x7f)
+    c:RegisterEffect(e6)
 end
 
 function s.condition(e, tp, eg, ep, ev, re, r, rp)
