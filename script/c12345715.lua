@@ -24,21 +24,12 @@ function s.initial_effect(c)
     --Equalize ATK during battle
     local e3=Effect.CreateEffect(c)
     e3:SetDescription(aux.Stringid(id,1))
-    e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
+    e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_F)
     e3:SetCode(EVENT_PRE_DAMAGE_CALCULATE)
     e3:SetRange(LOCATION_SZONE)
     e3:SetCondition(s.atkcon)
     e3:SetOperation(s.atkop)
     c:RegisterEffect(e3)
-    --Shield Counter prevents destruction
-    local e4=Effect.CreateEffect(c)
-    e4:SetType(EFFECT_TYPE_CONTINUOUS+EFFECT_TYPE_FIELD)
-    e4:SetCode(EFFECT_DESTROY_REPLACE)
-    e4:SetRange(LOCATION_SZONE)
-    e4:SetTarget(s.reptg)
-    e4:SetValue(s.repval)
-    c:RegisterEffect(e4)
-    --Change all monsters to Attack Position
     local e5=Effect.CreateEffect(c)
     e5:SetType(EFFECT_TYPE_FIELD)
     e5:SetCode(EFFECT_SET_POSITION)
@@ -59,7 +50,8 @@ function s.initial_effect(c)
     e7:SetType(EFFECT_TYPE_FIELD)
     e7:SetCode(EFFECT_PATRICIAN_OF_DARKNESS)
     e7:SetRange(LOCATION_SZONE)
-    e7:SetTargetRange(0,LOCATION_MZONE)
+	e7:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
+    e7:SetTargetRange(0,1)
     c:RegisterEffect(e7)
 end
 s.listed_names={170000175}
@@ -83,14 +75,25 @@ function s.spop(e,tp,eg,ep,ev,re,r,rp)
         local g=Group.CreateGroup()
         for i=1,5 do
             local token=Duel.CreateToken(tp,170000175)
-            Duel.SpecialSummonStep(token,0,tp,tp,false,false,POS_FACEUP)
+            Duel.SpecialSummonStep(token,0,tp,tp,false,false,POS_FACEUP_ATTACK)
             g:AddCard(token)
+            local e1=Effect.CreateEffect(e:GetHandler())
+            e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_CONTINUOUS)
+            e1:SetCode(EFFECT_DESTROY_REPLACE)
+            e1:SetTarget(s.reptg)
+            e1:SetReset(RESET_EVENT+RESETS_STANDARD)
+            token:RegisterEffect(e1)
         end
         Duel.SpecialSummonComplete()
         g:ForEach(function(tc)
             tc:AddCounter(0x1106,1)
         end)
     end
+end
+function s.reptg(e,tp,eg,ep,ev,re,r,rp,chk)
+	if chk==0 then return not e:GetHandler():IsReason(REASON_REPLACE) and e:GetHandler():GetCounter(0x1106)>0 end
+	e:GetHandler():RemoveCounter(tp,0x1106,1,REASON_EFFECT)
+	return true
 end
 
 -- Place Shield Counters
@@ -111,11 +114,14 @@ end
 function s.atkcon(e,tp,eg,ep,ev,re,r,rp)
     local a=Duel.GetAttacker()
     local d=Duel.GetAttackTarget()
-    return a and d and (a:IsControler(tp) or d:IsControler(tp))
+    if not d then return false end
+	local g=Group.FromCards(a,d)
+	return g:IsExists(s.atkfilter,1,nil,1)
 end
 function s.atkop(e,tp,eg,ep,ev,re,r,rp)
     local a=Duel.GetAttacker()
     local d=Duel.GetAttackTarget()
+    if not d then return end
     local g=Group.FromCards(a,d):Filter(s.atkfilter,nil)
     g:ForEach(function(tc)
         local e1=Effect.CreateEffect(e:GetHandler())
@@ -128,16 +134,4 @@ function s.atkop(e,tp,eg,ep,ev,re,r,rp)
 end
 function s.atkfilter(c)
     return c:IsFaceup() and c:IsCode(170000175)
-end
-
--- Shield Counter Prevents Destruction
-function s.reptg(e,tp,eg,ep,ev,re,r,rp,chk)
-    if chk==0 then return eg:IsExists(s.repfilter,1,nil,tp) end
-    return true
-end
-function s.repval(e,c)
-    return s.repfilter(c,e:GetHandlerPlayer())
-end
-function s.repfilter(c,tp)
-    return c:IsFaceup() and c:IsCode(170000175) and c:GetCounter(0x1106)>0 and c:IsControler(tp)
 end
