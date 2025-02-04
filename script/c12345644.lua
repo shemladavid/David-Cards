@@ -48,11 +48,11 @@ function s.initial_effect(c)
     e5:SetCode(EFFECT_CHANGE_RACE)
     e5:SetRange(LOCATION_SZONE)
     e5:SetTargetRange(LOCATION_MZONE,LOCATION_MZONE)
-    e5:SetValue(0xfffffff)
+    e5:SetValue(RACE_ALL)
     c:RegisterEffect(e5)
     local e6=e5:Clone()
     e6:SetCode(EFFECT_CHANGE_ATTRIBUTE)
-    e6:SetValue(0x7f)
+    e6:SetValue(ATTRIBUTE_ALL)
     c:RegisterEffect(e6)
 end
 
