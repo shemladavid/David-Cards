@@ -9,7 +9,7 @@ function s.initial_effect(c)
     e1:SetHintTiming(0,TIMING_END_PHASE)
     c:RegisterEffect(e1)
     
-    --cannot be destroyed or targeted
+    --this card cannot be destroyed or targeted
     local e2=Effect.CreateEffect(c)
     e2:SetType(EFFECT_TYPE_SINGLE)
     e2:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
@@ -48,12 +48,13 @@ function s.initial_effect(c)
     e5:SetValue(s.aclimit)
     c:RegisterEffect(e5)
     
+    --Allows you to control more than 1 "Timelord" monster
     local e6=Effect.CreateEffect(c)
     e6:SetType(EFFECT_TYPE_FIELD)
     e6:SetRange(LOCATION_SZONE)
     e6:SetCode(513000047)
     e6:SetTargetRange(LOCATION_MZONE,0)
-    e6:SetTarget(aux.TargetBoolFunction(Card.IsSetCard,0x4a))
+    e6:SetTarget(aux.TargetBoolFunction(Card.IsSetCard,SET_TIMELORD))
     c:RegisterEffect(e6)
     
     --special summon
@@ -98,12 +99,12 @@ function s.initial_effect(c)
         Duel.RegisterEffect(ge3,0)
     end)
 end
-s.listed_series={0x4a}
+s.listed_series={SET_TIMELORD}
 s.listed_names={36894320,8967776}
 
 --e4
 function s.tgtg(e,c)
-    return c:IsSetCard(0x4a) and c:IsFaceup()
+    return c:IsSetCard(SET_TIMELORD) and c:IsFaceup()
 end
 
 --e5
@@ -113,7 +114,7 @@ end
 
 function s.aclimit(e,re,tp)
     local rc=re:GetHandler()
-    return re:GetActivateLocation()==LOCATION_MZONE and rc:IsSetCard(0x4a) and not rc:IsImmuneToEffect(e)
+    return re:GetActivateLocation()==LOCATION_MZONE and rc:IsSetCard(SET_TIMELORD) and not rc:IsImmuneToEffect(e)
 end
 
 --e7
@@ -143,20 +144,19 @@ end
 
 --e8
 function s.filter(c,e,tp)
-    return c:IsCode(8967776) and c:IsCanBeSpecialSummoned(e,0,tp,true,false) 
-        and not c:IsHasEffect(EFFECT_NECRO_VALLEY)
+    return c:IsCode(8967776) and c:IsCanBeSpecialSummoned(e,0,tp,true,false)
 end
 
 function s.sephtg(e,tp,eg,ep,ev,re,r,rp,chk)
     if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0 
-        and Duel.IsExistingMatchingCard(s.filter,tp,LOCATION_DECK+LOCATION_GRAVE,0,1,nil,e,tp) end
-    Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK+LOCATION_GRAVE)
+        and Duel.IsExistingMatchingCard(s.filter,tp,LOCATION_HAND+LOCATION_DECK+LOCATION_GRAVE,0,1,nil,e,tp) end
+    Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_HAND+LOCATION_DECK+LOCATION_GRAVE)
 end
 
 function s.sephop(e,tp,eg,ep,ev,re,r,rp)
     if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
     Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
-    local g=Duel.SelectMatchingCard(tp,s.filter,tp,LOCATION_DECK+LOCATION_GRAVE,0,1,1,nil,e,tp)
+    local g=Duel.SelectMatchingCard(tp,s.filter,tp,LOCATION_HAND+LOCATION_DECK+LOCATION_GRAVE,0,1,1,nil,e,tp)
     if #g>0 then
         Duel.SpecialSummon(g,0,tp,tp,true,false,POS_FACEUP)
     end
@@ -164,7 +164,7 @@ end
 
 --ge1, ge2, ge3
 function s.cfilter(c,tp)
-    return c:IsSetCard(0x4a) and c:IsFaceup() and c:IsSummonPlayer(tp)
+    return c:IsSetCard(SET_TIMELORD) and c:IsFaceup() and c:IsSummonPlayer(tp)
 end
 
 function s.checkop(e,tp,eg,ep,ev,re,r,rp)

@@ -15,7 +15,6 @@ function s.initial_effect(c)
     e2:SetProperty(EFFECT_FLAG_DELAY)
     e2:SetRange(LOCATION_SZONE)
     e2:SetCondition(s.condition)
-    e2:SetTarget(s.target)
     e2:SetOperation(s.operation)
     c:RegisterEffect(e2)
 
@@ -60,16 +59,11 @@ function s.condition(e, tp, eg, ep, ev, re, r, rp)
     return eg:IsExists(Card.IsType, 1, nil, TYPE_XYZ) and eg:IsExists(Card.IsControler, 1, nil, tp)
 end
 
-function s.target(e, tp, eg, ep, ev, re, r, rp, chk)
-    if chk == 0 then
-        return Duel.GetFieldGroupCount(tp, 0, LOCATION_DECK) >= 3
-    end
-end
-
 function s.operation(e, tp, eg, ep, ev, re, r, rp)
-    local g = Duel.GetDecktopGroup(1 - tp, 3) -- Get the top 3 cards of opponent's deck
-    if #g == 0 then return end
-
+    local g = Duel.GetDecktopGroup(1 - tp, Duel.GetFieldGroupCount(tp, 0, LOCATION_DECK)) -- Get the remaining cards in opponent's deck
+    if #g > 3 then
+        g = Duel.GetDecktopGroup(1 - tp, 3)
+    end
     -- Attach 3 new cards for each Xyz monster involved
     local processed = Group.CreateGroup() -- Track monsters that have already received cards
     for tc in aux.Next(eg) do
@@ -79,8 +73,10 @@ function s.operation(e, tp, eg, ep, ev, re, r, rp)
             processed:AddCard(tc) -- Mark this monster as processed
 
             -- Refresh the top 3 cards for the next monster
-            g = Duel.GetDecktopGroup(1 - tp, 3)
-            if #g == 0 then break end
+            g = Duel.GetDecktopGroup(1 - tp, Duel.GetFieldGroupCount(tp, 0, LOCATION_DECK)) -- Get the remaining cards in opponent's deck
+            if #g > 3 then
+                g = Duel.GetDecktopGroup(1 - tp, 3)
+            end
         end
     end
 end
@@ -122,11 +118,12 @@ end
 function s.xyzoperation(e, tp, eg, ep, ev, re, r, rp)
     local g = Duel.GetMatchingGroup(function(c) return c:IsType(TYPE_XYZ) and c:GetOverlayCount() == 0 end, tp, LOCATION_MZONE, 0, nil)
     if #g > 0 then
-        local xyz = g:GetFirst()
-        local deck_g = Duel.GetDecktopGroup(1 - tp, 3) -- Get the top 3 cards of opponent's deck
-        if #deck_g > 0 then
-            Duel.DisableShuffleCheck()
-            Duel.Overlay(xyz, deck_g) -- Attach the cards to the Xyz monster
+        for xyz in aux.Next(g) do
+            local deck_g = Duel.GetDecktopGroup(1 - tp, 3) -- Get the top 3 cards of opponent's deck
+            if #deck_g > 0 then
+                Duel.DisableShuffleCheck()
+                Duel.Overlay(xyz, deck_g) -- Attach the cards to the Xyz monster
+            end
         end
     end
 end
