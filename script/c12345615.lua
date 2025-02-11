@@ -158,6 +158,14 @@ function s.flipop(e,tp,eg,ep,ev,re,r,rp)
 	e18:SetTargetRange(0,1)
     e18:SetTarget(s.releaseTarget)
 	Duel.RegisterEffect(e18,tp)
+	-- Prevent using your monsters for Link Summon
+	local e19=Effect.CreateEffect(c)
+	e19:SetType(EFFECT_TYPE_FIELD)
+	e19:SetCode(EFFECT_CANNOT_BE_LINK_MATERIAL)
+	e19:SetProperty(EFFECT_FLAG_IGNORE_IMMUNE)
+	e19:SetTargetRange(LOCATION_MZONE,0)
+	e19:SetValue(s.linklimit)
+	Duel.RegisterEffect(e19,tp)
 end
 
 function s.atkcon(e)
@@ -301,4 +309,9 @@ end
 
 function s.releaseTarget(e,c)
     return c:IsControler(e:GetHandlerPlayer())
+end
+
+function s.linklimit(e,c)
+    if not c then return false end
+    return c:IsControler(1-e:GetHandlerPlayer())
 end
