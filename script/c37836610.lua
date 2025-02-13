@@ -3,10 +3,12 @@ local s,id=GetID()
 function s.initial_effect(c)
     -- Destroy target Spell/Trap or monster (if Drudomancer revealed)
     local e1=Effect.CreateEffect(c)
-    e1:SetCategory(CATEGORY_DESTROY+CATEGORY_CONTROL)
-    e1:SetType(EFFECT_TYPE_QUICK_O)
+    e1:SetCategory(CATEGORY_DESTROY)
+    e1:SetType(EFFECT_TYPE_ACTIVATE)
     e1:SetCode(EVENT_FREE_CHAIN)
-    e1:SetRange(LOCATION_SZONE)
+    e1:SetProperty(EFFECT_FLAG_CARD_TARGET)
+    e1:SetHintTiming(0,TIMINGS_CHECK_MONSTER+TIMING_EQUIP+TIMING_MAIN_END+TIMING_END_PHASE)
+    e1:SetCountLimit(1,id)
     e1:SetTarget(s.destrtg)
     e1:SetOperation(s.destrop)
     c:RegisterEffect(e1)
@@ -14,9 +16,9 @@ function s.initial_effect(c)
     -- Set and shuffle Illusion monsters
     local e2=Effect.CreateEffect(c)
     e2:SetCategory(CATEGORY_TODECK)
-    e2:SetType(EFFECT_TYPE_GRANT)
-    e2:SetCode(EVENT_FREE_CHAIN)
+    e2:SetType(EFFECT_TYPE_IGNITION)
     e2:SetRange(LOCATION_GRAVE)
+    e2:SetCountLimit(1,{id,1})
     e2:SetTarget(s.settg)
     e2:SetOperation(s.setop)
     c:RegisterEffect(e2)
@@ -24,36 +26,39 @@ end
 
 -- Destroy Spell/Trap or target monster (if Drudomancer revealed)
 function s.destrfilter(c)
-    return c:IsType(TYPE_SPELL+TYPE_TRAP) and c:IsDestructable()
+    return c:IsType(TYPE_SPELL+TYPE_TRAP)
 end
 function s.monsterfilter(c)
-    return c:IsFaceup() and c:IsControlerCanBeChanged()
+    return c:IsType(TYPE_MONSTER)
+end
+function s.thfilter(c)
+    return c:IsSetCard(0x317d) and c:IsType(TYPE_MONSTER)
 end
 function s.destrtg(e,tp,eg,ep,ev,re,r,rp,chk)
     local c=e:GetHandler()
     if chk==0 then
         local res=Duel.IsExistingTarget(s.destrfilter,tp,0,LOCATION_SZONE,1,nil)
-        if Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_HAND,0,1,nil) then
-            res=Duel.IsExistingMatchingCard(s.monsterfilter,tp,0,LOCATION_MZONE,1,nil)
+        if Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_HAND,0,1,nil) and
+           Duel.IsExistingMatchingCard(Card.isPublic,tp,LOCATION_HAND,0,1,nil) then
+            res=Duel.IsExistingTarget(s.destrfilter,tp,0,LOCATION_SZONE,1,nil) or
+                 Duel.IsExistingTarget(s.monsterfilter,tp,0,LOCATION_MZONE,1,nil)
         end
         return res
     end
     local g=nil
-    if Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_HAND,0,1,nil) then
-        g=Duel.SelectTarget(tp,s.monsterfilter,tp,0,LOCATION_MZONE,1,1,nil)
+    if Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_HAND,0,1,nil) and
+       Duel.IsExistingMatchingCard(Card.isPublic,tp,LOCATION_HAND,0,1,nil) then
+        g=Duel.SelectTarget(tp,aux.TRUE,tp,0,LOCATION_SZONE+LOCATION_MZONE,1,1,nil)
     else
         g=Duel.SelectTarget(tp,s.destrfilter,tp,0,LOCATION_SZONE,1,1,nil)
     end
     Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
 end
+
 function s.destrop(e,tp,eg,ep,ev,re,r,rp)
     local tg=Duel.GetFirstTarget()
     if tg:IsRelateToEffect(e) then
-        if tg:IsType(TYPE_SPELL+TYPE_TRAP) then
-            Duel.Destroy(tg,REASON_EFFECT)
-        elseif tg:IsFaceup() then
-            Duel.Destroy(tg,REASON_EFFECT)
-        end
+        Duel.Destroy(tg,REASON_EFFECT)
     end
 end
 

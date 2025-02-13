@@ -18,8 +18,9 @@ function s.initial_effect(c)
 	e2:SetCode(EVENT_FREE_CHAIN)
 	e2:SetRange(LOCATION_HAND)
 	e2:SetHintTiming(TIMINGS_CHECK_MONSTER+TIMING_MAIN_END)
-	e2:SetCondition(s.nscon)
 	e2:SetCountLimit(1,id)
+	e2:SetCondition(s.nscon)
+	e2:SetCost(s.nscost)
 	e2:SetTarget(s.nstg)
 	e2:SetOperation(s.nsop)
 	c:RegisterEffect(e2)
@@ -39,18 +40,37 @@ function s.indestg(e,c)
 	local handler=e:GetHandler()
 	return c==handler or c==handler:GetBattleTarget()
 end
+
+-- Quick Effect Normal Summon
+function s.nsfilter(c)
+    return c:IsSetCard(0x317d) and c:IsType(TYPE_MONSTER) and c:IsSummonable(true,nil)
+end
+
 function s.nscon(e,tp,eg,ep,ev,re,r,rp)
-	return Duel.IsMainPhase() and Duel.IsExistingMatchingCard(aux.FaceupFilter(Card.IsSetCard,0x317d),tp,LOCATION_MZONE,0,1,nil)
+	return Duel.IsMainPhase()
+end
+function s.nscost(e,tp,eg,ep,ev,re,r,rp,chk)
+	if chk==0 then return true end
+	-- Reveal this card and keep it revealed for the rest of the turn
+    Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_CONFIRM)
+    Duel.ConfirmCards(1-tp,e:GetHandler())
+    e:GetHandler():RegisterFlagEffect(id,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,0,1)
+	local e1=Effect.CreateEffect(e:GetHandler())
+	e1:SetType(EFFECT_TYPE_SINGLE)
+	e1:SetCode(EFFECT_PUBLIC)
+	e1:SetReset(RESET_PHASE+PHASE_END)
+	e:GetHandler():RegisterEffect(e1)
 end
 function s.nstg(e,tp,eg,ep,ev,re,r,rp,chk)
-	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsSummonable,tp,LOCATION_HAND,0,1,nil,true,nil) end
+	if chk==0 then return Duel.IsExistingMatchingCard(s.nsfilter,tp,LOCATION_HAND,0,1,nil) end
+    Duel.SetOperationInfo(0,CATEGORY_SUMMON,nil,1,tp,LOCATION_HAND)
 end
 function s.nsop(e,tp,eg,ep,ev,re,r,rp)
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SUMMON)
-	local g=Duel.SelectMatchingCard(tp,Card.IsSummonable,tp,LOCATION_HAND,0,1,1,nil,true,nil)
-	if #g>0 then
-		Duel.Summon(tp,g:GetFirst(),true,nil)
-	end
+    local g=Duel.SelectMatchingCard(tp,s.nsfilter,tp,LOCATION_HAND,0,1,1,nil)
+    if #g>0 then
+        Duel.Summon(tp,g:GetFirst(),true,nil)
+    end
 end
 function s.tgcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsSummonType(SUMMON_TYPE_TRIBUTE)

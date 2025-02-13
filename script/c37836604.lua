@@ -39,6 +39,17 @@ function s.indestg(e,c)
 end
 function s.revcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsDiscardable,tp,LOCATION_HAND,0,1,e:GetHandler()) end
+	-- Reveal this card and keep it revealed for the rest of the turn
+    Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_CONFIRM)
+    Duel.ConfirmCards(1-tp,e:GetHandler())
+    e:GetHandler():RegisterFlagEffect(id,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,0,1)
+	local e1=Effect.CreateEffect(e:GetHandler())
+	e1:SetType(EFFECT_TYPE_SINGLE)
+	e1:SetCode(EFFECT_PUBLIC)
+	e1:SetReset(RESET_PHASE+PHASE_END)
+	e:GetHandler():RegisterEffect(e1)
+	
+	-- Discard 1 card as the cost
 	Duel.DiscardHand(tp,Card.IsDiscardable,1,1,REASON_COST+REASON_DISCARD)
 end
 function s.revfilter(c)

@@ -42,13 +42,13 @@ function s.indestg(e,c)
 end
 
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>1 and Duel.IsPlayerCanSpecialSummonMonster(tp,37836613,0x317d,TYPES_TOKEN+TYPE_ILLUSION,0,1000,1,RACE_ILLUSION,ATTRIBUTE_LIGHT) end
+	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>1 and Duel.IsPlayerCanSpecialSummonMonster(tp,37836613,0x317d,TYPES_TOKEN,0,1000,1,RACE_ILLUSION,ATTRIBUTE_LIGHT) end
 	Duel.SetOperationInfo(0,CATEGORY_TOKEN,nil,2,0,0)
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,2,0,0)
 end
 
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
-	if Duel.GetLocationCount(tp,LOCATION_MZONE)<2 or not Duel.IsPlayerCanSpecialSummonMonster(tp,37836613,0x317d,TYPES_TOKEN+TYPE_ILLUSION,0,1000,1,RACE_ILLUSION,ATTRIBUTE_LIGHT) then return end
+	if Duel.GetLocationCount(tp,LOCATION_MZONE)<2 or not Duel.IsPlayerCanSpecialSummonMonster(tp,37836613,0x317d,TYPES_TOKEN,0,1000,1,RACE_ILLUSION,ATTRIBUTE_LIGHT) then return end
 	for i=1,2 do
 		local token=Duel.CreateToken(tp,37836613)  -- Reference the existing token ID
 		Duel.SpecialSummonStep(token,0,tp,tp,false,false,POS_FACEUP)

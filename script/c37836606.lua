@@ -40,6 +40,15 @@ end
 function s.sscost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
 	e:SetLabel(1)
+	-- Reveal this card and keep it revealed for the rest of the turn
+    Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_CONFIRM)
+    Duel.ConfirmCards(1-tp,e:GetHandler())
+    e:GetHandler():RegisterFlagEffect(id,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,0,1)
+	local e1=Effect.CreateEffect(e:GetHandler())
+	e1:SetType(EFFECT_TYPE_SINGLE)
+	e1:SetCode(EFFECT_PUBLIC)
+	e1:SetReset(RESET_PHASE+PHASE_END)
+	e:GetHandler():RegisterEffect(e1)
 end
 function s.sstg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then
