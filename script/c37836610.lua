@@ -28,9 +28,6 @@ end
 function s.destrfilter(c)
     return c:IsType(TYPE_SPELL+TYPE_TRAP)
 end
-function s.monsterfilter(c)
-    return c:IsType(TYPE_MONSTER)
-end
 function s.thfilter(c)
     return c:IsSetCard(0x317d) and c:IsType(TYPE_MONSTER)
 end
@@ -39,21 +36,20 @@ function s.destrtg(e,tp,eg,ep,ev,re,r,rp,chk)
     if chk==0 then
         local res=Duel.IsExistingTarget(s.destrfilter,tp,0,LOCATION_SZONE,1,nil)
         if Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_HAND,0,1,nil) and
-           Duel.IsExistingMatchingCard(Card.isPublic,tp,LOCATION_HAND,0,1,nil) then
-            res=Duel.IsExistingTarget(s.destrfilter,tp,0,LOCATION_SZONE,1,nil) or
-                 Duel.IsExistingTarget(s.monsterfilter,tp,0,LOCATION_MZONE,1,nil)
+           Duel.IsExistingMatchingCard(aux.FilterBoolFunction(Card.IsPublic),tp,LOCATION_HAND,0,1,nil) then
+                res=Duel.IsExistingTarget(nil,tp,0,LOCATION_ONFIELD,1,nil)
         end
         return res
     end
-    local g=nil
     if Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_HAND,0,1,nil) and
-       Duel.IsExistingMatchingCard(Card.isPublic,tp,LOCATION_HAND,0,1,nil) then
-        g=Duel.SelectTarget(tp,aux.TRUE,tp,0,LOCATION_SZONE+LOCATION_MZONE,1,1,nil)
+       Duel.IsExistingMatchingCard(aux.FilterBoolFunction(Card.IsPublic),tp,LOCATION_HAND,0,1,nil) then
+        local g=Duel.SelectTarget(tp,nil,tp,0,LOCATION_ONFIELD,1,1,nil)
     else
-        g=Duel.SelectTarget(tp,s.destrfilter,tp,0,LOCATION_SZONE,1,1,nil)
+        local g=Duel.SelectTarget(tp,s.destrfilter,tp,0,LOCATION_SZONE,1,1,nil)
     end
     Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
 end
+
 
 function s.destrop(e,tp,eg,ep,ev,re,r,rp)
     local tg=Duel.GetFirstTarget()
@@ -68,11 +64,26 @@ function s.illusionfilter(c)
 end
 function s.settg(e,tp,eg,ep,ev,re,r,rp,chk)
     if chk==0 then return Duel.IsExistingMatchingCard(s.illusionfilter,tp,LOCATION_GRAVE+LOCATION_REMOVED,0,3,nil) end
+    Duel.SetOperationInfo(0,CATEGORY_LEAVE_GRAVE,e:GetHandler(),1,0,0)
     Duel.SetOperationInfo(0,CATEGORY_TODECK,nil,3,tp,LOCATION_GRAVE+LOCATION_REMOVED)
 end
 function s.setop(e,tp,eg,ep,ev,re,r,rp)
-    local g=Duel.SelectMatchingCard(tp,s.illusionfilter,tp,LOCATION_GRAVE+LOCATION_REMOVED,0,3,3,nil)
-    if #g>0 then
-        Duel.SendtoDeck(g,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
+    local c=e:GetHandler()
+    if c:IsRelateToEffect(e) and c:IsSSetable() then
+        Duel.SSet(tp,c)
+        local e1=Effect.CreateEffect(c)
+		e1:SetDescription(3300)
+		e1:SetProperty(EFFECT_FLAG_CLIENT_HINT)
+		e1:SetType(EFFECT_TYPE_SINGLE)
+		e1:SetCode(EFFECT_LEAVE_FIELD_REDIRECT)
+		e1:SetReset(RESET_EVENT+RESETS_REDIRECT)
+		e1:SetValue(LOCATION_REMOVED)
+		c:RegisterEffect(e1)
+        
+        -- Shuffle Illusion monsters
+        local g=Duel.SelectMatchingCard(tp,s.illusionfilter,tp,LOCATION_GRAVE+LOCATION_REMOVED,0,3,3,nil)
+        if #g>0 then
+            Duel.SendtoDeck(g,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
+        end
     end
 end

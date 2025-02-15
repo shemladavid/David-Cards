@@ -27,7 +27,7 @@ end
 
 -- Negate effect and take control if Drudomancer revealed
 function s.thfilter(c)
-    return c:IsSetCard(0x1145) and c:IsType(TYPE_MONSTER)
+    return c:IsSetCard(0x317d) and c:IsType(TYPE_MONSTER)
 end
 function s.negctg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
     if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsFaceup() and chkc:IsControler(1-tp) and chkc:IsSummonType(SUMMON_TYPE_SPECIAL) end

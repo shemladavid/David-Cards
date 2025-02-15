@@ -17,7 +17,7 @@ function s.initial_effect(c)
 	e2:SetCode(EFFECT_EXTRA_RELEASE_SUM)
     e2:SetRange(LOCATION_SZONE)
 	e2:SetTargetRange(0,LOCATION_MZONE)
-    e2:SetValue(s.trival)
+    e2:SetCondition(s.tricon)
     c:RegisterEffect(e2)
 
     -- Return monsters to hand after battle (Illusion monster)
@@ -47,10 +47,10 @@ function s.activate(e,tp,eg,ep,ev,re,r,rp)
 end
 
 -- Tribute Summon by tributing 1 monster from each field, for a revealed "Drudomancer" monster
-function s.trival(e,c)
+function s.tricon(e)
     local tp=e:GetHandlerPlayer()
-    return Duel.IsExistingMatchingCard(Card.IsPublic,tp,LOCATION_HAND,0,1,nil) and
-    Duel.IsExistingMatchingCard(s.trifilter,tp,LOCATION_HAND,0,1,nil)
+    return Duel.IsExistingMatchingCard(s.trifilter,tp,LOCATION_HAND,0,1,nil) and
+        Duel.IsExistingMatchingCard(aux.FilterBoolFunction(Card.IsPublic),tp,LOCATION_HAND,0,1,nil)
 end
 function s.trifilter(c)
     return c:IsSetCard(0x317d) and c:IsType(TYPE_MONSTER)
