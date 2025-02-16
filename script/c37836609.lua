@@ -36,7 +36,7 @@ function s.negctg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
     local g=Duel.SelectTarget(tp,aux.FaceupFilter(Card.IsSummonType,SUMMON_TYPE_SPECIAL),tp,0,LOCATION_MZONE,1,1,nil)
     Duel.SetOperationInfo(0,CATEGORY_NEGATE,g,1,0,0)
     if Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_HAND,0,1,nil) and
-       Duel.IsExistingMatchingCard(Card.isPublic,tp,LOCATION_HAND,0,1,nil) then
+    Duel.IsExistingMatchingCard(aux.FilterBoolFunction(Card.IsPublic),tp,LOCATION_HAND,0,1,nil) then
         Duel.SetOperationInfo(0,CATEGORY_CONTROL,g,1,0,0)
     end
 end
@@ -60,7 +60,7 @@ function s.negcop(e,tp,eg,ep,ev,re,r,rp)
 
         -- Take control if Drudomancer monster is revealed
         if Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_HAND,0,1,nil) and
-           Duel.IsExistingMatchingCard(Card.isPublic,tp,LOCATION_HAND,0,1,nil) then
+        Duel.IsExistingMatchingCard(aux.FilterBoolFunction(Card.IsPublic),tp,LOCATION_HAND,0,1,nil) then
             Duel.GetControl(tc,tp,PHASE_END,1)
         end
     end
@@ -69,12 +69,15 @@ end
 
 -- Set card from GY and return Illusion monster
 function s.illusionfilter(c)
-    return c:IsRace(RACE_ILLUSION) and c:IsType(TYPE_MONSTER) and c:IsLevelAbove(5)
+    return c:IsRace(RACE_ILLUSION) and c:IsType(TYPE_MONSTER) and c:IsLevelAbove(5) and c:IsAbleToHand()
 end
-function s.settg(e,tp,eg,ep,ev,re,r,rp,chk)
+function s.settg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
+    if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and chkc:IsAbleToHand() end
     if chk==0 then return Duel.IsExistingMatchingCard(s.illusionfilter,tp,LOCATION_MZONE,0,1,nil) and e:GetHandler():IsSSetable() end
     Duel.SetOperationInfo(0,CATEGORY_LEAVE_GRAVE,e:GetHandler(),1,0,0)
-    Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_MZONE)
+    Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RTOHAND)
+    local g=Duel.SelectTarget(tp,s.illusionfilter,tp,LOCATION_MZONE,0,1,1,nil)
+    Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,0,0)
 end
 function s.setop(e,tp,eg,ep,ev,re,r,rp)
     local c=e:GetHandler()
@@ -89,10 +92,9 @@ function s.setop(e,tp,eg,ep,ev,re,r,rp)
 		e1:SetValue(LOCATION_REMOVED)
 		c:RegisterEffect(e1)
 
-        -- Select and return a monster from the GY to the hand
-        Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RTOHAND)
-        local tg=Duel.SelectMatchingCard(tp,Card.IsAbleToHand,tp,LOCATION_MZONE,0,1,1,nil)
-        if #tg>0 then
+        -- Return the selected monster to the hand
+        local tg=Duel.GetFirstTarget()
+        if tg and tg:IsRelateToEffect(e) then
             Duel.SendtoHand(tg,nil,REASON_EFFECT)
             Duel.ConfirmCards(1-tp,tg)
         end
