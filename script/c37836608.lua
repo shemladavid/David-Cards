@@ -17,6 +17,7 @@ function s.initial_effect(c)
 	e2:SetCode(EFFECT_EXTRA_RELEASE_SUM)
     e2:SetRange(LOCATION_SZONE)
 	e2:SetTargetRange(0,LOCATION_MZONE)
+    e2:SetCountLimit(1)
     e2:SetCondition(s.tricon)
     c:RegisterEffect(e2)
 
