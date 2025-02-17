@@ -21,15 +21,17 @@ function s.initial_effect(c)
 	e2:SetCountLimit(1,id+100)
 	e2:SetCondition(aux.exccon)
 	e2:SetCost(aux.bfgcost)
+	e2:SetTarget(s.nstg)
 	e2:SetOperation(s.nsop)
 	c:RegisterEffect(e2)
 end
 
 function s.negcon(e,tp,eg,ep,ev,re,r,rp)
-	local c=e:GetHandler()
-	return rp==1-tp and Duel.IsChainNegatable(ev) and (re:GetHandler():IsLocation(LOCATION_MZONE) or re:IsHasType(EFFECT_TYPE_ACTIVATE))
-		and (Duel.IsExistingMatchingCard(aux.FaceupFilter(Card.IsSummonType,SUMMON_TYPE_NORMAL),tp,LOCATION_MZONE,0,1,nil)
-		or re:GetHandler():IsSetCard(0x16f))
+    local c=e:GetHandler()
+	local ch=ev-1 
+	local ch_player,ch_eff=Duel.GetChainInfo(ch,CHAININFO_TRIGGERING_PLAYER,CHAININFO_TRIGGERING_EFFECT)
+	local ch_c=ch_eff:GetHandler()
+    return rp~=tp and Duel.IsChainNegatable(ev) and ch_player==tp and ch_c:IsSetCard(0x16f)
 end
 
 function s.negtg(e,tp,eg,ep,ev,re,r,rp,chk)
@@ -47,12 +49,17 @@ function s.negop(e,tp,eg,ep,ev,re,r,rp)
 	end
 end
 
+function s.nsfilter(c)
+	return c:IsRace(RACE_WINGEDBEAST) and c:IsSummonable(true,nil)
+end
+function s.nstg(e,tp,eg,ep,ev,re,r,rp,chk)
+	if chk==0 then return Duel.IsExistingMatchingCard(s.nsfilter,tp,LOCATION_HAND|LOCATION_MZONE,0,1,nil) end
+	Duel.SetOperationInfo(0,CATEGORY_SUMMON,nil,1,tp,LOCATION_HAND|LOCATION_MZONE)
+end
 function s.nsop(e,tp,eg,ep,ev,re,r,rp)
-	if Duel.GetLocationCount(tp,LOCATION_MZONE)>0 then
-		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SUMMON)
-		local g=Duel.SelectMatchingCard(tp,aux.FaceupFilter(Card.IsRace,RACE_WINGEDBEAST),tp,LOCATION_HAND,0,1,1,nil)
-		if #g>0 then
-			Duel.Summon(tp,g:GetFirst(),true,nil)
-		end
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SUMMON)
+	local sc=Duel.SelectMatchingCard(tp,s.nsfilter,tp,LOCATION_HAND|LOCATION_MZONE,0,1,1,nil):GetFirst()
+	if sc then
+		Duel.Summon(tp,sc,true,nil)
 	end
 end
