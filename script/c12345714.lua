@@ -80,14 +80,16 @@ function s.thop(e,tp,eg,ep,ev,re,r,rp)
 end
 
 function s.fztg(e,tp,eg,ep,ev,re,r,rp,chk)
-	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_FZONE)>0 or Duel.IsExistingMatchingCard(aux.TRUE,tp,LOCATION_FZONE,0,1,nil) end
+	if chk==0 then return true end
 end
 function s.fzop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	if Duel.GetLocationCount(tp,LOCATION_FZONE)>0 then
+	local opt=Duel.SelectOption(tp,aux.Stringid(id,2),aux.Stringid(id,3))
+	if opt==0 then
 		Duel.MoveToField(c,tp,tp,LOCATION_FZONE,POS_FACEUP,true)
 	else
 		Duel.SendtoHand(c,nil,REASON_EFFECT)
+		Duel.ConfirmCards(1-tp,c)
 	end
 end
 
