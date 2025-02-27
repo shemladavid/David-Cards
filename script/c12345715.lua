@@ -54,7 +54,7 @@ function s.initial_effect(c)
     e7:SetTargetRange(0,1)
     c:RegisterEffect(e7)
 end
-s.listed_names={170000175}
+s.listed_names={id+3}
 
 -- Special Summon Tokens and Place Card in S/T Zone
 function s.spcon(e,tp,eg,ep,ev,re,r,rp)
@@ -62,7 +62,7 @@ function s.spcon(e,tp,eg,ep,ev,re,r,rp)
 end
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
     if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>3 and
-        Duel.IsPlayerCanSpecialSummonMonster(tp,170000175,0x530,TYPES_TOKEN,0,0,1,RACE_WARRIOR,ATTRIBUTE_DARK) end
+        Duel.IsPlayerCanSpecialSummonMonster(tp,id+3,0x530,TYPES_TOKEN,1500,1500,1,RACE_WARRIOR,ATTRIBUTE_DARK) end
     Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,5,tp,0)
     Duel.SetOperationInfo(0,CATEGORY_TOKEN,nil,5,tp,0)
 end
@@ -70,11 +70,11 @@ function s.spop(e,tp,eg,ep,ev,re,r,rp)
     if Duel.GetLocationCount(tp,LOCATION_MZONE)<4 or
         Duel.IsPlayerAffectedByEffect(tp,CARD_BLUEEYES_SPIRIT) then return end
     local c=e:GetHandler()
-    if not Duel.IsPlayerCanSpecialSummonMonster(tp,170000175,0x530,TYPES_TOKEN,0,0,1,RACE_WARRIOR,ATTRIBUTE_DARK) then return end
+    if not Duel.IsPlayerCanSpecialSummonMonster(tp,id+3,0x530,TYPES_TOKEN,1500,1500,1,RACE_WARRIOR,ATTRIBUTE_DARK) then return end
     if Duel.MoveToField(c,tp,tp,LOCATION_SZONE,POS_FACEUP,true) then
         local g=Group.CreateGroup()
         for i=1,5 do
-            local token=Duel.CreateToken(tp,170000175)
+            local token=Duel.CreateToken(tp,id+3)
             Duel.SpecialSummonStep(token,0,tp,tp,false,false,POS_FACEUP_ATTACK)
             g:AddCard(token)
             local e1=Effect.CreateEffect(e:GetHandler())
@@ -107,7 +107,7 @@ function s.ctop(e,tp,eg,ep,ev,re,r,rp)
     end)
 end
 function s.ctfilter(c)
-    return c:IsFaceup() and c:IsCode(170000175) and c:GetCounter(0x1106)==0
+    return c:IsFaceup() and c:IsCode(id+3) and c:GetCounter(0x1106)==0
 end
 
 -- Equalize ATK During Battle
@@ -133,5 +133,5 @@ function s.atkop(e,tp,eg,ep,ev,re,r,rp)
     end)
 end
 function s.atkfilter(c)
-    return c:IsFaceup() and c:IsCode(170000175)
+    return c:IsFaceup() and c:IsCode(id+3)
 end

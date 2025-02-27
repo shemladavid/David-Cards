@@ -41,6 +41,7 @@ function s.initial_effect(c)
 
     --add to hand
 	local e5=Effect.CreateEffect(c)
+	e5:SetDescription(aux.Stringid(id,0))
 	e5:SetCategory(CATEGORY_TOHAND)
 	e5:SetType(EFFECT_TYPE_IGNITION)
 	e5:SetRange(LOCATION_FZONE)
@@ -49,9 +50,9 @@ function s.initial_effect(c)
 	e5:SetOperation(s.thop)
 	c:RegisterEffect(e5)
 
-    --Banish cards from the opponent's deck
+    --Banish cards from the opponent's field
 	local e6=Effect.CreateEffect(c)
-	e6:SetDescription(aux.Stringid(id,2))
+	e6:SetDescription(aux.Stringid(id,1))
 	e6:SetCategory(CATEGORY_REMOVE)
 	e6:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
 	e6:SetCode(EVENT_REMOVE)
@@ -95,8 +96,9 @@ function s.thop(e,tp,eg,ep,ev,re,r,rp)
 	end
 end
 
+-- Banish 1 card from the opponent's field
 function s.rmcon(e,tp,eg,ep,ev,re,r,rp)
-    return eg:IsExists(Card.IsControler,1,nil,1-tp) and Duel.IsExistingMatchingCard(aux.TRUE,tp,0,LOCATION_ONFIELD,1,nil)
+    return eg:IsExists(Card.IsControler,1,nil,1-tp) and Duel.IsExistingMatchingCard(Card.IsAbleToRemove,tp,0,LOCATION_ONFIELD,1,nil)
 end
 
 function s.rmop(e,tp,eg,ep,ev,re,r,rp)
@@ -104,6 +106,8 @@ function s.rmop(e,tp,eg,ep,ev,re,r,rp)
     if #g>0 then
         Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)
         local sg=g:Select(tp,1,1,nil)
-        Duel.Remove(sg,POS_FACEUP,REASON_EFFECT)
+        if #sg>0 then
+            Duel.Remove(sg,POS_FACEUP,REASON_EFFECT)
+        end
     end
 end

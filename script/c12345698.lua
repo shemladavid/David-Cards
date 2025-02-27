@@ -17,14 +17,15 @@ end
 
 function s.target(e, tp, eg, ep, ev, re, r, rp, chk)
     if chk == 0 then
-        return Duel.GetLocationCount(tp, LOCATION_MZONE) > 0 and
-                   Duel.IsExistingMatchingCard(s.filter, tp, LOCATION_EXTRA, 0, 1, nil, e, tp)
+        return (Duel.GetLocationCount(tp, LOCATION_MZONE) > 0 or Duel.GetLocationCountFromEx(tp, tp, nil, nil) > 0)
+            and Duel.IsExistingMatchingCard(s.filter, tp, LOCATION_EXTRA, 0, 1, nil, e, tp)
     end
     Duel.SetOperationInfo(0, CATEGORY_SPECIAL_SUMMON, nil, 1, tp, LOCATION_EXTRA)
 end
 
 function s.activate(e, tp, eg, ep, ev, re, r, rp)
-    if Duel.GetLocationCount(tp, LOCATION_MZONE) <= 0 then return end
+    -- Check both main monster zones and Extra Monster Zones
+    if Duel.GetLocationCount(tp, LOCATION_MZONE) <= 0 and Duel.GetLocationCountFromEx(tp, tp, nil, nil) <= 0 then return end
     Duel.Hint(HINT_SELECTMSG, tp, HINTMSG_SPSUMMON)
     local g = Duel.SelectMatchingCard(tp, s.filter, tp, LOCATION_EXTRA, 0, 1, 1, nil, e, tp)
     local tc = g:GetFirst()
