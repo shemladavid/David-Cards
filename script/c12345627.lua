@@ -35,7 +35,7 @@ end
 function s.val(e,c)
 	return Duel.GetMatchingGroup(s.filter,c:GetControler(),LOCATION_MZONE,0,c):GetSum(Card.GetAttack)
 end
-function s.atkthfilter(c)
+function s.atktdfilter(c)
 	return c:IsFaceup() and c:IsType(TYPE_SYNCHRO)
 end
 function s.atktdtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
