@@ -17,7 +17,7 @@ end
 function s.negcon(e,tp,eg,ep,ev,re,r,rp)
 	for i=1,ev do
 		local te,tgp=Duel.GetChainInfo(i,CHAININFO_TRIGGERING_EFFECT,CHAININFO_TRIGGERING_PLAYER)
-		if tgp~=tp and Duel.IsChainNegatable(i) then
+		if tgp~=tp and Duel.IsChainNegatable(i) and ep==1-tp then
 			return true
 		end
 	end

@@ -12,6 +12,7 @@ function s.initial_effect(c)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetRange(LOCATION_MZONE)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)
+	e1:SetHintTiming(0,TIMINGS_CHECK_MONSTER+TIMING_END_PHASE)
 	e1:SetCountLimit(1)
 	e1:SetTarget(s.destg)
 	e1:SetOperation(s.desop)
@@ -83,36 +84,48 @@ function s.rescon(ect)
 	end
 end
 function s.sumtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	local g=e:GetLabelObject()
-	local sg=Duel.GetMatchingGroup(s.spfilter,tp,LOCATION_EXTRA+LOCATION_GRAVE,0,e:GetHandler(),e,tp)
-	if chk==0 then return #g>0 and (not Duel.IsPlayerAffectedByEffect(tp,CARD_BLUEEYES_SPIRIT) or #g<=1) 
-		and aux.SelectUnselectGroup(sg,e,tp,nil,nil,s.rescon(aux.CheckSummonGate(tp)),0) end
-	Duel.SetTargetCard(g)
-	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,#g,tp,0)
+    local g = e:GetLabelObject()  -- overlay group stored by e3
+    local count = #g
+    if Duel.IsPlayerAffectedByEffect(tp,CARD_BLUEEYES_SPIRIT) then count = 1 end
+    local sg = Duel.GetMatchingGroup(s.spfilter, tp, LOCATION_EXTRA+LOCATION_GRAVE, 0, e:GetHandler(), e, tp)
+    if chk==0 then 
+        return count > 0 and aux.SelectUnselectGroup(sg, e, tp, 1, count, s.rescon(aux.CheckSummonGate(tp)), 0)
+    end
+    Duel.SetTargetCard(g)
+    Duel.SetOperationInfo(0, CATEGORY_SPECIAL_SUMMON, nil, count, tp, 0)
 end
 
 function s.sumop(e,tp,eg,ep,ev,re,r,rp)
-	local mg=Duel.GetTargetCards(e)
-	local ct=#mg
-	if ct<=0 or (Duel.IsPlayerAffectedByEffect(tp,CARD_BLUEEYES_SPIRIT) and ct>1) then return end
-	local g=Duel.GetMatchingGroup(aux.NecroValleyFilter(s.spfilter),tp,LOCATION_EXTRA+LOCATION_GRAVE,0,e:GetHandler(),e,tp)
-	local sg=aux.SelectUnselectGroup(g,e,tp,ct,ct,s.rescon(aux.CheckSummonGate(tp)),1,tp,HINTMSG_SPSUMMON)
-	if #sg<=0 then return end
-	
-	-- Special Summon with proper summon procedure
-	Duel.SpecialSummon(sg,SUMMON_TYPE_SPECIAL,tp,tp,false,false,POS_FACEUP)
+    local mg = Duel.GetTargetCards(e)
+    local ct = #mg
+    if ct <= 0 or (Duel.IsPlayerAffectedByEffect(tp,CARD_BLUEEYES_SPIRIT) and ct > 1) then return end
+    local g = Duel.GetMatchingGroup(aux.NecroValleyFilter(s.spfilter), tp, LOCATION_EXTRA+LOCATION_GRAVE, 0, e:GetHandler(), e, tp)
+    local maxct = ct
+    if Duel.IsPlayerAffectedByEffect(tp,CARD_BLUEEYES_SPIRIT) then maxct = 1 end
+    local sg = aux.SelectUnselectGroup(g, e, tp, 1, maxct, s.rescon(aux.CheckSummonGate(tp)), 1, tp, HINTMSG_SPSUMMON)
+    if #sg <= 0 then return end
+    
+    -- Special Summon with proper summon procedure
+    Duel.SpecialSummon(sg, SUMMON_TYPE_SPECIAL, tp, tp, false, false, POS_FACEUP)
+    
+    -- Mark each summoned monster as properly summoned
+    local tc = sg:GetFirst()
+    while tc do
+        tc:CompleteProcedure()
+        tc = sg:GetNext()
+    end
 
-	-- Mark each summoned monster as properly summoned
-	local tc=sg:GetFirst()
-	while tc do
-		tc:CompleteProcedure()
-		tc=sg:GetNext()
-	end
-
-	for oc in aux.Next(mg) do
-		local tc=sg:FilterSelect(tp,Card.IsLocation,1,1,nil,LOCATION_MZONE):GetFirst()
-		if not tc then break end
-		Duel.Overlay(tc,oc)
-		sg:RemoveCard(tc)
-	end
+    if sg:GetCount() == 1 then
+        -- If only one monster was summoned, attach all overlays to it.
+        local tc = sg:GetFirst()
+        Duel.Overlay(tc, mg)
+    else
+        -- Otherwise, attach overlays one-to-one.
+        for oc in aux.Next(mg) do
+            local tc = sg:FilterSelect(tp, Card.IsLocation, 1, 1, nil, LOCATION_MZONE):GetFirst()
+            if not tc then break end
+            Duel.Overlay(tc, oc)
+            sg:RemoveCard(tc)
+        end
+    end
 end
