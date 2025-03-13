@@ -120,12 +120,40 @@ function s.sumop(e,tp,eg,ep,ev,re,r,rp)
         local tc = sg:GetFirst()
         Duel.Overlay(tc, mg)
     else
-        -- Otherwise, attach overlays one-to-one.
-        for oc in aux.Next(mg) do
-            local tc = sg:FilterSelect(tp, Card.IsLocation, 1, 1, nil, LOCATION_MZONE):GetFirst()
-            if not tc then break end
-            Duel.Overlay(tc, oc)
-            sg:RemoveCard(tc)
+        -- More than one monster was summoned:
+        -- Calculate even share and remainder.
+        local overlaysCount = mg:GetCount()
+        local monstersCount = sg:GetCount()
+        local evenCount = math.floor(overlaysCount / monstersCount)
+        local remainder = overlaysCount % monstersCount
+
+        -- Even distribution: each monster gets "evenCount" overlays.
+        for tc in aux.Next(sg) do
+            local groupForThis = Group.CreateGroup()
+            for i = 1, evenCount do
+                local oc = mg:GetFirst()
+                if not oc then break end
+                groupForThis:AddCard(oc)
+                mg:RemoveCard(oc)
+            end
+            if groupForThis:GetCount() > 0 then
+                Duel.Overlay(tc, groupForThis)
+            end
+        end
+
+        -- Distribute leftover overlays randomly, each monster can receive at most one extra.
+        if remainder > 0 then
+            local monstersForExtra = sg:Clone()
+            for i = 1, remainder do
+                if monstersForExtra:GetCount() <= 0 then break end
+                local selectedMonster = monstersForExtra:RandomSelect(tp, 1):GetFirst()
+                local oc = mg:GetFirst()
+                if oc then
+                    Duel.Overlay(selectedMonster, oc)
+                    mg:RemoveCard(oc)
+                end
+                monstersForExtra:RemoveCard(selectedMonster)
+            end
         end
     end
 end
