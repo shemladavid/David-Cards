@@ -42,6 +42,17 @@ function s.initial_effect(c)
     e4:SetOperation(s.xyzoperation)
     c:RegisterEffect(e4)
 
+    -- Reattach detached Xyz materials (e5)
+    local e5 = Effect.CreateEffect(c)
+    e5:SetDescription(aux.Stringid(id, 2))
+    e5:SetType(EFFECT_TYPE_FIELD + EFFECT_TYPE_TRIGGER_F)
+    e5:SetCode(EVENT_DETACH_MATERIAL)
+    e5:SetProperty(EFFECT_FLAG_DELAY)
+    e5:SetRange(LOCATION_SZONE)
+    e5:SetCondition(s.attachback_condition)
+    e5:SetOperation(s.attachback_operation)
+    c:RegisterEffect(e5)
+
     -- Global override: while a face-up copy of this card is on the field, 
     -- all monsters are treated as having every race and every attribute.
     if not s.global_check then
@@ -193,4 +204,22 @@ end
 -- Filter to check for a face-up copy of this card in the Spell & Trap Zone.
 function s.filter(c)
     return c:IsFaceup() and c:IsCode(id)
+end
+
+function s.attachback_condition(e, tp, eg, ep, ev, re, r, rp)
+    -- Check if any of the detached cards were removed from an Xyz monster you control
+    return eg:IsExists(function(c)
+        local rc = c:GetReasonCard()
+        return rc and rc:IsType(TYPE_XYZ) and rc:IsControler(tp)
+    end, 1, nil)
+end
+
+function s.attachback_operation(e, tp, eg, ep, ev, re, r, rp)
+    for tc in aux.Next(eg) do
+        local rc = tc:GetReasonCard()
+        if rc and rc:IsType(TYPE_XYZ) and rc:IsControler(tp) and rc:IsFaceup() then
+            Duel.DisableShuffleCheck()
+            Duel.Overlay(rc, Group.FromCards(tc))
+        end
+    end
 end
