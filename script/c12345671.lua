@@ -33,11 +33,11 @@ function s.initial_effect(c)
 
     -- Change Xyz Level
     local e4=Effect.CreateEffect(c)
-    e4:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
-    e4:SetCode(EVENT_SUMMON_SUCCESS)
+    e4:SetType(EFFECT_TYPE_FIELD)
+    e4:SetCode(EFFECT_XYZ_LEVEL)
     e4:SetRange(LOCATION_FZONE)
-    e4:SetCondition(s.xyzlvcon)
-    e4:SetOperation(s.xyzlvop)
+    e4:SetTargetRange(LOCATION_MZONE,0)
+    e4:SetValue(s.xyzlv)
     c:RegisterEffect(e4)
 end
 
@@ -99,37 +99,10 @@ function s.negop(e,tp,eg,ep,ev,re,r,rp)
     end
 end
 
-function s.xyzlvcon(e,tp,eg,ep,ev,re,r,rp)
-    local tc=eg:GetFirst()
-    return tc:IsFaceup() and (tc:IsSetCard(0x53) or tc:IsSetCard(0x9c))
+function s.xyzlv(e,c,rc)
+    if rc:IsSetCard(0x53) or rc:IsSetCard(0x9c) then
+        return 1,2,3,4,5,6,7,8,9,10,11,12
+    else
+        return c:GetLevel()
+    end
 end
-
-function s.xyzlvop(e,tp,eg,ep,ev,re,r,rp)
-    local tc=eg:GetFirst()
-    if not tc then return end
-    local e1=Effect.CreateEffect(e:GetHandler())
-    e1:SetType(EFFECT_TYPE_SINGLE)
-    e1:SetCode(EFFECT_XYZ_LEVEL)
-    e1:SetProperty(EFFECT_FLAG_IGNORE_IMMUNE)
-    e1:SetValue(1)
-    e1:SetReset(RESET_PHASE+PHASE_END)
-    tc:RegisterEffect(e1)
-    local e2=e1:Clone()
-    e2:SetValue(2)
-    tc:RegisterEffect(e2)
-    local e3=e1:Clone()
-    e3:SetValue(3)
-    tc:RegisterEffect(e3)
-    local e4=e1:Clone()
-    e4:SetValue(4)
-    tc:RegisterEffect(e4)
-    local e5=e1:Clone()
-    e5:SetValue(5)
-    tc:RegisterEffect(e5)
-    local e6=e1:Clone()
-    e6:SetValue(6)
-    tc:RegisterEffect(e6)
-    local e7=e1:Clone()
-    e7:SetValue(7)
-    tc:RegisterEffect(e7)
-end 
