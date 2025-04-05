@@ -12,7 +12,7 @@ function s.initial_effect(c)
     e2:SetDescription(aux.Stringid(id,0))
     e2:SetType(EFFECT_TYPE_IGNITION)
     e2:SetRange(LOCATION_FZONE)
-    e2:SetCountLimit(1,id) -- Hard once per turn
+    e2:SetCountLimit(1,id)
     e2:SetTarget(s.gytg)
     e2:SetOperation(s.gyop)
     c:RegisterEffect(e2)
@@ -25,7 +25,7 @@ function s.initial_effect(c)
     e3:SetCode(EVENT_CHAINING)
     e3:SetProperty(EFFECT_FLAG_DAMAGE_STEP+EFFECT_FLAG_DAMAGE_CAL)
     e3:SetRange(LOCATION_FZONE)
-    e3:SetCountLimit(1,id+1) -- Hard once per turn
+    e3:SetCountLimit(1,id+1)
     e3:SetCondition(s.negcon)
     e3:SetTarget(s.negtg)
     e3:SetOperation(s.negop)
@@ -39,6 +39,16 @@ function s.initial_effect(c)
     e4:SetTargetRange(LOCATION_MZONE,0)
     e4:SetValue(s.xyzlv)
     c:RegisterEffect(e4)
+
+    -- xyz treated as 2
+    local e5=Effect.CreateEffect(c)
+    e5:SetType(EFFECT_TYPE_FIELD)
+    e5:SetCode(511001225)
+    e5:SetRange(LOCATION_FZONE)
+    e5:SetTargetRange(0x7f,0)
+    e5:SetTarget(aux.TargetBoolFunction(Card.IsSetCard,0x53 or 0x9c))
+    e5:SetValue(1)
+    c:RegisterEffect(e5)
 end
 
 s.listed_series={0x53,0x9c}
