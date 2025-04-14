@@ -75,7 +75,7 @@ function s.initial_effect(c)
 
     -- Gain ATK and DEF before damage calculation
     local e8=Effect.CreateEffect(c)
-    e8:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
+    e8:SetType(EFFECT_TYPE_QUICK_F)
     e8:SetCode(EVENT_PRE_DAMAGE_CALCULATE)
     e8:SetRange(LOCATION_FZONE)
     e8:SetCondition(s.atkcon)

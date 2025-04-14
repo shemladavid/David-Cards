@@ -60,7 +60,7 @@ function s.initial_effect(c)
     -- Boost ATK of "Maiden In Love" each time you take control of a monster
     local e8 = Effect.CreateEffect(c)
     e8:SetType(EFFECT_TYPE_FIELD + EFFECT_TYPE_QUICK_F)
-    e8:SetProperty(EFFECT_FLAG_CARD_TARGET)
+    e8:SetProperty(EFFECT_FLAG_CARD_TARGET+EFFECT_FLAG_DELAY)
     e8:SetCode(EVENT_CONTROL_CHANGED)
     e8:SetRange(LOCATION_FZONE)
     e8:SetCondition(s.atk_boost_condition)

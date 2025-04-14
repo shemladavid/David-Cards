@@ -313,7 +313,7 @@ end
 
 function s.effectfilter(e,ct)
 	local te,tp,loc=Duel.GetChainInfo(ct,CHAININFO_TRIGGERING_EFFECT,CHAININFO_TRIGGERING_PLAYER,CHAININFO_TRIGGERING_LOCATION)
-	return tp==e:GetHandlerPlayer() and loc&LOCATION_ONFIELD~=0
+	return tp==e:GetHandlerPlayer() and (loc&LOCATION_ONFIELD~=0 or loc&LOCATION_HAND~=0 or loc&LOCATION_GRAVE~=0)
 end
 
 function s.releaseTarget(e,c)
