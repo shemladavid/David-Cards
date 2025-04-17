@@ -110,8 +110,8 @@ function s.negop(e,tp,eg,ep,ev,re,r,rp)
 end
 
 function s.xyzlv(e,c,rc)
-    if rc:IsSetCard(0x53) or rc:IsSetCard(0x9c) then
-        return 1,2,3,4,5,6,7,8,9,10,11,12
+    if (rc:IsSetCard(0x53) or rc:IsSetCard(0x9c)) and not rc:IsType(type_xyz) then
+        return 1,2,4,5,6,7,8,9,10,11,12
     else
         return c:GetLevel()
     end
