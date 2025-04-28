@@ -123,7 +123,7 @@ function s.operation(e,tp,eg,ep,ev,re,r,rp)
 end
 
 function s.ngfilter(c)
-	return c:IsFaceup() and c:IsSetCard(SET_GUNKAN)
+	return c:IsFaceup() and c:IsSetCard(SET_GUNKAN) and c:IsType(TYPE_XYZ)
 end
 function s.ngcon(e,tp,eg,ep,ev,re,r,rp)
 	return Duel.IsExistingMatchingCard(s.ngfilter,tp,LOCATION_MZONE,0,1,nil) and rp~=tp 

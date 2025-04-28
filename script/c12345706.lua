@@ -153,11 +153,12 @@ function s.lp_gain_target(e, tp, eg, ep, ev, re, r, rp, chk)
 end
 
 function s.opponent_extra_deck_check(tp)
-    local g = Duel.GetFieldGroup(tp, 0, LOCATION_EXTRA)
+    local g = Duel.GetFieldGroup(1 - tp, LOCATION_EXTRA, 0)
     if #g > 0 then
-        Duel.ConfirmCards(1 - tp, g)
+        Duel.ConfirmCards(tp, g)
     end
 end
+
 
 -- Operation to send monster to GY, gain LP, and summon a monster from opponent's GY or banishment
 function s.lp_gain_operation(e, tp, eg, ep, ev, re, r, rp)
