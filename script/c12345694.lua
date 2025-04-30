@@ -43,6 +43,8 @@ function s.initial_effect(c)
     c:RegisterEffect(e3)
 end
 
+s.counter_place_list={0x1036}
+
 -- Excavation effect functions
 function s.excavate_cost(e,tp,eg,ep,ev,re,r,rp,chk)
     if chk==0 then return true end
