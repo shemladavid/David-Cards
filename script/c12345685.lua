@@ -29,7 +29,7 @@ function s.activate(e,tp,eg,ep,ev,re,r,rp)
         Duel.ConfirmCards(1-tp,token)
 
         -- Apply a flag to the declared card with a hint
-        token:RegisterFlagEffect(id,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,0,1)
+        token:RegisterFlagEffect(id,RESET_EVENT+RESETS_STANDARD,0,1)
         token:RegisterFlagEffect(id,0,EFFECT_FLAG_CLIENT_HINT,1,0,aux.Stringid(id,0)) -- Add hint for the card
 
         -- Add the banished card to your hand after the declared card's effect resolves
@@ -39,14 +39,18 @@ function s.activate(e,tp,eg,ep,ev,re,r,rp)
         e1:SetCondition(s.thcon)
         e1:SetOperation(s.thop)
         e1:SetLabelObject(token)
-        e1:SetReset(RESET_PHASE+PHASE_END)
         Duel.RegisterEffect(e1,tp)
     end
 end
 
 function s.thcon(e,tp,eg,ep,ev,re,r,rp)
-    -- Check if the activated card has the flag
-    return re:GetHandler():GetFlagEffect(id) > 0
+    if re and re:GetHandler()==e:GetLabelObject() then
+		e:GetLabelObject():ResetFlagEffect(id)
+		e:Reset()
+		return true
+	else
+		return false
+	end
 end
 
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
