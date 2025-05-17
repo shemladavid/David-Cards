@@ -175,6 +175,19 @@ function s.flipop(e,tp,eg,ep,ev,re,r,rp)
 	e19:SetTargetRange(LOCATION_MZONE,0)
 	e19:SetValue(s.linklimit)
 	Duel.RegisterEffect(e19,tp)
+	-- -- Flip Decks face-up
+	-- local e20=Effect.CreateEffect(c)
+	-- e20:SetType(EFFECT_TYPE_FIELD)
+	-- e20:SetCode(EFFECT_REVERSE_DECK)
+	-- e20:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
+	-- e20:SetValue(1)
+	-- Duel.RegisterEffect(e20,tp)
+	--Spirit monster do not have to return to the hand
+	local e21=Effect.CreateEffect(c)
+	e21:SetType(EFFECT_TYPE_FIELD)
+	e21:SetCode(EFFECT_SPIRIT_MAYNOT_RETURN)
+	e21:SetTargetRange(LOCATION_MZONE,0)
+	Duel.RegisterEffect(e21,tp)
 end
 
 function s.atkcon(e)

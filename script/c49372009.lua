@@ -24,31 +24,17 @@ function s.lcheck(g,lc,sumtype,tp)
 end
 
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-    if chk==0 then return Duel.GetFieldGroupCount(tp,0,LOCATION_HAND)>0 end
-    Duel.SetOperationInfo(0,CATEGORY_TODECK,nil,1,1-tp,LOCATION_HAND)
+    if chk==0 then return true end
+    Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,1-tp,2)
 end
 
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
-    local g=Duel.GetFieldGroup(tp,0,LOCATION_HAND)
-    local ct=#g
-    if ct==0 then return end
-    if ct<=2 then
-        -- If opponent has 2 or less cards, shuffle all into the Deck
-        Duel.SendtoDeck(g,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
-        Duel.ShuffleDeck(1-tp)
-    else
-        -- If opponent has 3 or more cards, reveal and select 2 to shuffle
-        Duel.ConfirmCards(tp,g)
-        local sg=g:Select(tp,2,2,nil)
-        Duel.SendtoDeck(sg,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
-        Duel.ShuffleDeck(1-tp)
-        Duel.ShuffleHand(1-tp)
-    end
+    local g=Duel.GetFieldGroup(tp,0,LOCATION_HAND):RandomSelect(tp,2)
+    Duel.SendtoDeck(g,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
     -- Immediately return to Extra Deck and Special Summon from Extra Deck
     local c=e:GetHandler()
     if c:IsLocation(LOCATION_MZONE) then
         Duel.SendtoDeck(c,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
-        Duel.ShuffleDeck(tp)
         local sc=Duel.GetFirstMatchingCard(Card.IsCode,tp,LOCATION_EXTRA,0,nil,49372007)
         if sc then
             Duel.SpecialSummon(sc,0,tp,tp,false,false,POS_FACEUP)
