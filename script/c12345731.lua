@@ -63,11 +63,20 @@ function s.initial_effect(c)
 	e4:SetTarget(s.ngtg)
 	e4:SetOperation(s.ngop)
 	c:RegisterEffect(e4)
+
+	-- all "Gladiator" cards are treated as "Gladiator Beast" cards
+	local e5=Effect.CreateEffect(c)
+	e5:SetType(EFFECT_TYPE_FIELD)
+	e5:SetCode(EFFECT_ADD_SETCODE)
+	e5:SetTargetRange(LOCATION_DECK+LOCATION_GRAVE+LOCATION_ONFIELD+LOCATION_HAND+LOCATION_EXTRA+LOCATION_REMOVED,0)
+	e5:SetTarget(aux.TargetBoolFunction(Card.IsSetCard,SET_GLADIATOR))
+	e5:SetValue(SET_GLADIATOR_BEAST)
+	c:RegisterEffect(e5)
 end
 s.listed_series={SET_GLADIATOR_BEAST,SET_GLADIATOR}
 
 function s.thfilter(c)
-	return c:IsSetCard(SET_GLADIATOR) and c:IsMonster() and c:IsAbleToHand()
+	return c:IsSetCard(SET_GLADIATOR) and c:IsAbleToHand()
 end
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_DECK+LOCATION_GRAVE,0,1,nil) end

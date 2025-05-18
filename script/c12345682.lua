@@ -7,6 +7,7 @@ function s.initial_effect(c)
 	c:EnableReviveLimit()
 	--destroy
 	local e1=Effect.CreateEffect(c)
+    e1:SetDescription(aux.Stringid(id,0))
 	e1:SetCategory(CATEGORY_DESTROY)
 	e1:SetType(EFFECT_TYPE_QUICK_O)
 	e1:SetCode(EVENT_FREE_CHAIN)

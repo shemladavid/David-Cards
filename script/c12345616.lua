@@ -111,7 +111,7 @@ function s.initial_effect(c)
   e15:SetValue(1)
   c:RegisterEffect(e15)
 
-  -- Special summon a monster from opponent's banish zone
+  -- Special summon a monster from opponent's GY or banishment
   local e16 = Effect.CreateEffect(c)
   e16:SetType(EFFECT_TYPE_QUICK_O)
   e16:SetCode(EVENT_FREE_CHAIN)
@@ -177,6 +177,9 @@ function s.banishop2(e,tp,eg,ep,ev,re,r,rp)
   if tc and tc:GetControler() ~= tp then
     -- Inflict damage equal to the attack of the monster to be banished
     local damage = tc:GetAttack()
+    if tc:GetAttack() < tc:GetDefense() then
+      damage = tc:GetDefense()
+    end
     Duel.Damage(1-tp, damage, REASON_EFFECT)
 
     -- Banish the monster
@@ -189,7 +192,7 @@ function s.ss_filter(c)
 end
 
 function s.ss_target(e,tp,eg,ep,ev,re,r,rp,chk)
-  if chk==0 then return Duel.IsExistingMatchingCard(s.ss_filter,tp,0,LOCATION_GRAVE+LOCATION_REMOVED,1,nil) end
+  if chk==0 then return Duel.IsExistingMatchingCard(s.ss_filter,tp,0,LOCATION_GRAVE+LOCATION_REMOVED,1,nil) and Duel.GetLocationCount(tp-1,LOCATION_MZONE)>0 end
   Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
   local g = Duel.GetMatchingGroup(s.ss_filter,tp,0,LOCATION_GRAVE+LOCATION_REMOVED,nil)
   local tc = g:Select(tp,1,1,nil):GetFirst()

@@ -257,7 +257,7 @@ function s.drop(e,tp,eg,ep,ev,re,r,rp)
 end
 
 function s.lpcon(e,tp,eg,ep,ev,re,r,rp)
-	return Duel.GetTurnPlayer()==tp
+	return Duel.GetTurnPlayer()==tp and Duel.GetFieldGroupCount(tp,LOCATION_ONFIELD,0)>0
 end
 
 function s.lpop(e,tp,eg,ep,ev,re,r,rp)
