@@ -64,27 +64,28 @@ function s.initial_effect(c)
 	e4:SetOperation(s.ngop)
 	c:RegisterEffect(e4)
 
-	-- all "Gladiator" cards are treated as "Gladiator Beast" cards
+	-- all your cards are treated as "Gladiator Beast" cards
 	local e5=Effect.CreateEffect(c)
 	e5:SetType(EFFECT_TYPE_FIELD)
 	e5:SetCode(EFFECT_ADD_SETCODE)
-	e5:SetTargetRange(LOCATION_DECK+LOCATION_GRAVE+LOCATION_ONFIELD+LOCATION_HAND+LOCATION_EXTRA+LOCATION_REMOVED,0)
-	e5:SetTarget(aux.TargetBoolFunction(Card.IsSetCard,SET_GLADIATOR))
+	e5:SetRange(LOCATION_FZONE)
+	e5:SetTargetRange(LOCATION_ALL,0)
 	e5:SetValue(SET_GLADIATOR_BEAST)
 	c:RegisterEffect(e5)
 end
 s.listed_series={SET_GLADIATOR_BEAST,SET_GLADIATOR}
 
 function s.thfilter(c)
-	return c:IsSetCard(SET_GLADIATOR) and c:IsAbleToHand()
+	return c:IsSetCard(SET_GLADIATOR_BEAST) and c:IsAbleToHand()
 end
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	if chk==0 then return Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_DECK+LOCATION_GRAVE,0,1,nil) end
-	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK+LOCATION_GRAVE)
+	if chk==0 then return Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_GRAVE+LOCATION_DECK,0,1,nil) end
+	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_GRAVE+LOCATION_DECK)
 end
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
+	if not e:GetHandler():IsRelateToEffect(e) then return end
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)
-	local g=Duel.SelectMatchingCard(tp,s.thfilter,tp,LOCATION_DECK+LOCATION_GRAVE,0,1,1,nil)
+	local g=Duel.SelectMatchingCard(tp,s.thfilter,tp,LOCATION_GRAVE+LOCATION_DECK,0,1,1,nil)
 	if #g>0 then
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
 		Duel.ConfirmCards(1-tp,g)
@@ -118,11 +119,11 @@ function s.checkop(e,tp,eg,ep,ev,re,r,rp)
 end
 
 function s.tgfilter(c,e,tp,ft)
-	return c:IsFaceup() and c:IsSetCard(SET_GLADIATOR) and c:IsAbleToDeck() and (ft>-1 or c:GetSequence()<5)
+	return c:IsFaceup() and c:IsSetCard(SET_GLADIATOR_BEAST) and c:IsAbleToDeck() and (ft>-1 or c:GetSequence()<5)
 		and Duel.IsExistingMatchingCard(s.spfilter,tp,LOCATION_DECK+LOCATION_EXTRA,0,1,nil,e,tp,c:GetOriginalCodeRule())
 end
 function s.spfilter(c,e,tp,code)
-	return c:IsSetCard(SET_GLADIATOR) and c:IsCanBeSpecialSummoned(e,130,tp,true,false) and c:IsMonster()
+	return c:IsSetCard(SET_GLADIATOR_BEAST) and c:IsCanBeSpecialSummoned(e,130,tp,true,false) and c:IsMonster()
 end
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	local ft=Duel.GetLocationCount(tp,LOCATION_MZONE)
@@ -146,7 +147,7 @@ function s.spop(e,tp,eg,ep,ev,re,r,rp)
 end
 
 function s.ngfilter(c)
-	return c:IsFaceup() and c:IsSetCard(SET_GLADIATOR) and c:IsMonster()
+	return c:IsFaceup() and c:IsSetCard(SET_GLADIATOR_BEAST) and c:IsMonster()
 end
 function s.ngcon(e,tp,eg,ep,ev,re,r,rp)
 	return Duel.IsExistingMatchingCard(s.ngfilter,tp,LOCATION_ONFIELD,0,1,nil) and rp~=tp 
