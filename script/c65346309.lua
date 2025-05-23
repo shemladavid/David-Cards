@@ -46,8 +46,8 @@ function s.spfilter(c,e,tp)
 	return c:IsSetCard(SET_OLD_GOD) and c:IsCanBeSpecialSummoned(e,0,tp,false,false,POS_FACEUP_DEFENSE)
 end
 
-function s.xyzfilter(c,mat,tp)
-	return c:IsSetCard(SET_OLD_GOD) and c:IsType(TYPE_XYZ) and mat:IsCanBeXyzMaterial(c,tp)
+function s.xyzfilter(c)
+	return c:IsSetCard(SET_OLD_GOD) and c:IsType(TYPE_XYZ)
 end
 
 function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
@@ -62,17 +62,32 @@ function s.operation(e,tp,eg,ep,ev,re,r,rp)
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
 	local g=Duel.SelectMatchingCard(tp,s.spfilter,tp,LOCATION_DECK,0,1,1,nil,e,tp)
 	if #g>0 and Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP_DEFENSE)>0 then
-		local mat=g:GetFirst()
 		Duel.BreakEffect()
-		local xyzs=Duel.GetMatchingGroup(s.xyzfilter,tp,LOCATION_EXTRA,0,nil,mat)
+		local xyzs=Duel.GetMatchingGroup(s.xyzfilter,tp,LOCATION_EXTRA,0,nil)
 		if #xyzs>0 and Duel.SelectYesNo(tp,aux.Stringid(id,1)) then
 			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
 			local xyz=xyzs:Select(tp,1,1,nil):GetFirst()
-			if xyz then
-				-- Overlay material and Xyz Summon
-				Duel.Overlay(xyz,Group.FromCards(mat))
-				Duel.SpecialSummon(xyz,SUMMON_TYPE_XYZ,tp,tp,false,false,POS_FACEUP)
-				xyz:CompleteProcedure()
+			if not xyz then return end
+
+			local mg=Duel.GetMatchingGroup(Card.IsFaceup,tp,LOCATION_MZONE,0,nil)
+			local minct
+			local maxct
+			if xyz.minxyzct then minct=xyz.minxyzct end
+			if xyz.maxxyzct then maxct=xyz.maxxyzct end
+
+			-- You may also use the built-in helper function to get required materials
+			local xyz_filter=xyz.xyz_filter or aux.TRUE
+
+			local valid_materials=mg:Filter(Card.IsCanBeXyzMaterial,nil,xyz,tp):Filter(xyz_filter,nil,xyz)
+			if #valid_materials>=minct then
+				Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_XMATERIAL)
+				local mat=valid_materials:Select(tp,minct,minct,nil)
+				if #mat>0 then
+					xyz:SetMaterial(mat)
+					Duel.Overlay(xyz,mat)
+					Duel.SpecialSummon(xyz,SUMMON_TYPE_XYZ,tp,tp,false,false,POS_FACEUP)
+					xyz:CompleteProcedure()
+				end
 			end
 		end
 	end

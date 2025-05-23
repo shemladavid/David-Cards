@@ -63,15 +63,21 @@ function s.operation(e,tp,eg,ep,ev,re,r,rp)
 	if #g>0 then
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
 		Duel.ConfirmCards(1-tp,g)
-		-- Optional fusion Summon
+		-- Optional Fusion Summon
+		local mg1=Duel.GetFusionMaterial(tp)
 		local sg=Duel.GetMatchingGroup(s.fusfilter,tp,LOCATION_EXTRA,0,nil,e,tp)
 		if #sg>0 and Duel.SelectYesNo(tp,aux.Stringid(id,1)) then
 			Duel.BreakEffect()
 			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
-			local sc=sg:Select(tp,1,1,nil):GetFirst()
-			if sc then
-				Duel.SpecialSummon(sc,SUMMON_TYPE_FUSION,tp,tp,false,false,POS_FACEUP)
-				sc:CompleteProcedure()
+			local tc=sg:Select(tp,1,1,nil):GetFirst()
+			if tc then
+				local mat=Duel.SelectFusionMaterial(tp,tc,mg1,nil,tp)
+				if #mat>0 then
+					tc:SetMaterial(mat)
+					Duel.SendtoGrave(mat,REASON_EFFECT+REASON_MATERIAL+REASON_FUSION)
+					Duel.SpecialSummon(tc,SUMMON_TYPE_FUSION,tp,tp,false,false,POS_FACEUP)
+					tc:CompleteProcedure()
+				end
 			end
 		end
 	end
