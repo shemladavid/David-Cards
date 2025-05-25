@@ -66,7 +66,7 @@ function s.actcon(e)
 end
 
 function s.thfilter(c)
-	return c:IsSetCard(SET_OLD_GOD) and c:IsAbleToHand()
+	return c:IsSetCard(SET_OLD_GOD) and c:IsAbleToHand() and not c:IsCode(id)
 end
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_GRAVE+LOCATION_DECK,0,1,nil) end

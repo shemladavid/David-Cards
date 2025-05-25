@@ -2,7 +2,7 @@
 local s,id=GetID()
 local SET_OLD_GOD=0x653 
 function s.initial_effect(c)
-	-- Fusion Material
+	-- Xyz Material
 	c:EnableReviveLimit()
     Xyz.AddProcedure(c,aux.FilterBoolFunctionEx(Card.IsSetCard,SET_OLD_GOD),12,2)
     -- Must be xyz Summoned or Special Summoned by an "Old God" card
@@ -34,6 +34,18 @@ function s.initial_effect(c)
     e2:SetTarget(s.negtg)
     e2:SetOperation(s.negop)
     c:RegisterEffect(e2)
+    -- Add old god card from Deck/GY to hand
+    local e3=Effect.CreateEffect(c)
+	e3:SetDescription(aux.Stringid(id,1))
+	e3:SetCategory(CATEGORY_TOHAND)
+	e3:SetType(EFFECT_TYPE_IGNITION)
+	e3:SetRange(LOCATION_FZONE)
+	e3:SetCountLimit(1,id)
+    e3:SetCost(Cost.Detach(1))
+	e3:SetTarget(s.thtg)
+	e3:SetOperation(s.thop)
+	c:RegisterEffect(e3)
+    
 end
 s.listed_series={SET_OLD_GOD}
 
@@ -51,7 +63,7 @@ function s.negcost(e,tp,eg,ep,ev,re,r,rp,chk)
     Duel.Release(g,REASON_COST)
 end
 function s.negcon(e,tp,eg,ep,ev,re,r,rp)
-    return not e:GetHandler():IsStatus(STATUS_BATTLE_DESTROYED) and Duel.IsChainNegatable(ev)
+    return Duel.IsChainNegatable(ev) and rp~=tp and not e:GetHandler():IsStatus(STATUS_BATTLE_DESTROYED)
 end
 function s.negtg(e,tp,eg,ep,ev,re,r,rp,chk)
     if chk==0 then return true end
@@ -61,5 +73,22 @@ end
 function s.negop(e,tp,eg,ep,ev,re,r,rp)
     if Duel.NegateActivation(ev) and re:GetHandler():IsRelateToEffect(re) then
 		Duel.Destroy(eg,REASON_EFFECT)
+	end
+end
+
+function s.thfilter(c)
+	return c:IsSetCard(SET_OLD_GOD) and c:IsAbleToHand()
+end
+function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
+	if chk==0 then return Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_GRAVE+LOCATION_DECK,0,1,nil) end
+	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_GRAVE+LOCATION_DECK)
+end
+function s.thop(e,tp,eg,ep,ev,re,r,rp)
+	if not e:GetHandler():IsRelateToEffect(e) then return end
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)
+	local g=Duel.SelectMatchingCard(tp,s.thfilter,tp,LOCATION_GRAVE+LOCATION_DECK,0,1,1,nil)
+	if #g>0 then
+		Duel.SendtoHand(g,nil,REASON_EFFECT)
+		Duel.ConfirmCards(1-tp,g)
 	end
 end

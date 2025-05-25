@@ -64,21 +64,34 @@ function s.operation(e,tp,eg,ep,ev,re,r,rp)
 	if #g>0 and Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP_DEFENSE)>0 then
 		Duel.BreakEffect()
 		local xyzs=Duel.GetMatchingGroup(s.xyzfilter,tp,LOCATION_EXTRA,0,nil)
-		if #xyzs>0 and Duel.SelectYesNo(tp,aux.Stringid(id,1)) then
+		local can_summon_xyz=false
+		local valid_xyz=nil
+
+		-- Check each XYZ monster for summon possibility
+		for xyz in aux.Next(xyzs) do
+			local mg=Duel.GetMatchingGroup(Card.IsFaceup,tp,LOCATION_MZONE,0,nil)
+			local minct=xyz.minxyzct or 2
+			local maxct=xyz.maxxyzct or minct
+			local xyz_filter=xyz.xyz_filter or aux.TRUE
+			local valid_materials=mg:Filter(Card.IsCanBeXyzMaterial,nil,xyz,tp):Filter(xyz_filter,nil,xyz)
+			if #valid_materials>=minct then
+				can_summon_xyz=true
+				break
+			end
+		end
+
+		-- Ask the player only if it's possible
+		if can_summon_xyz and Duel.SelectYesNo(tp,aux.Stringid(id,1)) then
 			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
 			local xyz=xyzs:Select(tp,1,1,nil):GetFirst()
 			if not xyz then return end
 
 			local mg=Duel.GetMatchingGroup(Card.IsFaceup,tp,LOCATION_MZONE,0,nil)
-			local minct
-			local maxct
-			if xyz.minxyzct then minct=xyz.minxyzct end
-			if xyz.maxxyzct then maxct=xyz.maxxyzct end
-
-			-- You may also use the built-in helper function to get required materials
+			local minct=xyz.minxyzct or 2
+			local maxct=xyz.maxxyzct or minct
 			local xyz_filter=xyz.xyz_filter or aux.TRUE
-
 			local valid_materials=mg:Filter(Card.IsCanBeXyzMaterial,nil,xyz,tp):Filter(xyz_filter,nil,xyz)
+
 			if #valid_materials>=minct then
 				Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_XMATERIAL)
 				local mat=valid_materials:Select(tp,minct,minct,nil)

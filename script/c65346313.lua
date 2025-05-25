@@ -19,7 +19,6 @@ function s.initial_effect(c)
 	e1:SetRange(LOCATION_MZONE)
 	e1:SetTargetRange(0,LOCATION_MZONE)
 	e1:SetCode(EFFECT_CANNOT_SELECT_BATTLE_TARGET)
-	e1:SetCondition(s.atcon)
 	e1:SetValue(s.atlimit)
 	c:RegisterEffect(e1)
     --Your opponent cannot target cards you control with card effects
@@ -31,20 +30,29 @@ function s.initial_effect(c)
 	e2:SetTargetRange(LOCATION_ONFIELD,0)
 	e2:SetValue(aux.tgoval)
 	c:RegisterEffect(e2)
-    --Tribute 1 "Old God" monster and negate the effect of a monster your opponent controls and halve its ATK
+    --Tribute 1 "Old God" monster and negate your opponent's effects
     local e3=Effect.CreateEffect(c)
     e3:SetDescription(aux.Stringid(id,0))
-    e3:SetCategory(CATEGORY_DISABLE+CATEGORY_ATKCHANGE)
+    e3:SetCategory(CATEGORY_DISABLE)
     e3:SetType(EFFECT_TYPE_QUICK_O)
     e3:SetCode(EVENT_FREE_CHAIN)
     e3:SetHintTiming(0,TIMINGS_CHECK_MONSTER_E)
-    e3:SetProperty(EFFECT_FLAG_CARD_TARGET+EFFECT_FLAG_DAMAGE_STEP+EFFECT_FLAG_DAMAGE_CAL)
     e3:SetRange(LOCATION_MZONE)
     e3:SetCountLimit(1,id)
     e3:SetCost(s.negcost)
     e3:SetTarget(s.negtg)
     e3:SetOperation(s.negop)
     c:RegisterEffect(e3)
+	--Special Summon 1 "Old God" card from your graveyard
+	local e4=Effect.CreateEffect(c)
+    e4:SetDescription(aux.Stringid(id,1))
+    e4:SetCategory(CATEGORY_SPECIAL_SUMMON)
+    e4:SetType(EFFECT_TYPE_IGNITION)
+    e4:SetRange(LOCATION_MZONE)
+    e4:SetCountLimit(1,{id,1})
+    e4:SetTarget(s.sptg)
+    e4:SetOperation(s.spop)
+    c:RegisterEffect(e4)
 end
 s.listed_series={SET_OLD_GOD}
 
@@ -60,9 +68,6 @@ function s.splimit(e,se,sp,st)
             or (se:IsHasType(EFFECT_TYPE_ACTIONS) and se:GetHandler():IsSetCard(SET_OLD_GOD))
 end
 
-function s.atcon(e)
-	return e:GetHandler():IsDefensePos()
-end
 function s.atlimit(e,c)
 	return c~=e:GetHandler()
 end
@@ -76,33 +81,42 @@ function s.negcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local g=Duel.SelectReleaseGroup(tp,s.costfilter,1,1,nil)
 	Duel.Release(g,REASON_COST)
 end
-function s.negfilter(c)
-    return c:IsFaceup() and c:IsType(TYPE_MONSTER)
-end
-function s.negtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	if chkc then return chkc:IsLocation(LOCATION_MZONE) and s.negfilter(chkc) end
-	if chk==0 then return Duel.IsExistingTarget(s.negfilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) end
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_NEGATE)
-	Duel.SelectTarget(tp,s.negfilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil)
+function s.negtg(e,tp,eg,ep,ev,re,r,rp,chk)
+	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsNegatable,tp,0,LOCATION_ONFIELD,1,nil) end
 end
 function s.negop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	local tc=Duel.GetFirstTarget()
-	if tc:IsRelateToEffect(e) and tc:IsFaceup() then
+	if not c:IsRelateToEffect(e) then return end
+	local g=Duel.GetMatchingGroup(Card.IsNegatable,tp,0,LOCATION_ONFIELD,nil)
+	for tc in aux.Next(g) do
 		Duel.NegateRelatedChain(tc,RESET_TURN_SET)
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_DISABLE)
-		e1:SetReset(RESET_EVENT|RESETS_STANDARD)
+		e1:SetReset(RESETS_STANDARD_PHASE_END)
 		tc:RegisterEffect(e1)
-		local e2=e1:Clone()
+		local e2=Effect.CreateEffect(c)
+		e2:SetType(EFFECT_TYPE_SINGLE)
 		e2:SetCode(EFFECT_DISABLE_EFFECT)
 		e2:SetValue(RESET_TURN_SET)
+		e2:SetReset(RESETS_STANDARD_PHASE_END)
 		tc:RegisterEffect(e2)
-		Duel.AdjustInstantly(tc)
-		local e3=e1:Clone()
-		e3:SetCode(EFFECT_SET_BASE_ATTACK)
-		e3:SetValue(tc:GetBaseAttack()/2)
-		tc:RegisterEffect(e3)
+	end
+end
+
+function s.spfilter(c,e,tp)
+    return c:IsSetCard(SET_OLD_GOD) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
+end
+function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
+	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
+		and Duel.IsExistingMatchingCard(s.spfilter,tp,LOCATION_GRAVE,0,1,nil,e,tp) end
+	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_GRAVE)
+end
+function s.spop(e,tp,eg,ep,ev,re,r,rp)
+	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
+	local g=Duel.SelectMatchingCard(tp,s.spfilter,tp,LOCATION_GRAVE,0,1,1,nil,e,tp)
+	if #g>0 then
+		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 	end
 end

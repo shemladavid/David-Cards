@@ -56,7 +56,6 @@ end
 s.listed_series={SET_YOSENJU}
 
 function s.thfilter(c)
-	local tc=c:GetText()
 	return (c:IsSetCard(SET_YOSENJU) or c:ListsArchetype(SET_YOSENJU)) and c:IsAbleToHand()
 end
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
