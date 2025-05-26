@@ -4,7 +4,7 @@ local SET_OLD_GOD=0x653
 function s.initial_effect(c)
 	-- Fusion Material
 	c:EnableReviveLimit()
-    Synchro.AddProcedure(c,s.tunerfilter,1,1,s.nontunerfilter,1,99,s.lcheck)
+    Synchro.AddProcedure(c,aux.FilterBoolFunctionEx(Card.IsSetCard,SET_OLD_GOD),1,1,Synchro.NonTunerEx(Card.IsSetCard,SET_OLD_GOD),1,99)
     -- Treat "Old God" monsters you control as Level 6 for this card's Synchro Summon
     local e0=Effect.CreateEffect(c)
     e0:SetType(EFFECT_TYPE_FIELD)
@@ -48,6 +48,7 @@ function s.initial_effect(c)
     e3:SetCode(EVENT_FREE_CHAIN)
     e3:SetProperty(EFFECT_FLAG_CARD_TARGET)
     e3:SetRange(LOCATION_MZONE)
+    e3:SetHintTiming(0,TIMINGS_CHECK_MONSTER_E)
     e3:SetCountLimit(1,{id,1})
     e3:SetCost(s.rmcost)
     e3:SetTarget(s.rmtg)
@@ -55,15 +56,6 @@ function s.initial_effect(c)
     c:RegisterEffect(e3)
 end
 s.listed_series={SET_OLD_GOD}
-function s.tunerfilter(c,sc,sumtype,tp)
-    return c:IsSetCard(SET_OLD_GOD,sc,sumtype,tp) and c:IsType(TYPE_TUNER,sc,sumtype,tp)
-end
-function s.nontunerfilter(c,sc,sumtype,tp)
-    return c:IsSetCard(SET_OLD_GOD,sc,sumtype,tp) and not c:IsType(TYPE_TUNER,sc,sumtype,tp)
-end
-function s.lcheck(g,tp,sc)
-    return true -- no additional material check
-end
 function s.splimit(e,se,sp,st)
 	return (st&SUMMON_TYPE_SYNCHRO)==SUMMON_TYPE_SYNCHRO
             or (se:IsHasType(EFFECT_TYPE_ACTIONS) and se:GetHandler():IsSetCard(SET_OLD_GOD))
