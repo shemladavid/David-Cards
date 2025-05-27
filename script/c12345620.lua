@@ -76,10 +76,9 @@ function s.filter(c)
 end
 
 function s.opponent_extra_deck_check(tp)
-    local g=Duel.GetFieldGroup(tp,LOCATION_EXTRA,LOCATION_EXTRA)
-    if #g>0 then
-        Duel.ConfirmCards(1-tp,g)
-        Duel.ShuffleDeck(tp)
+    local g = Duel.GetFieldGroup(1 - tp, LOCATION_EXTRA, 0)
+    if #g > 0 then
+        Duel.ConfirmCards(tp, g)
     end
 end
 

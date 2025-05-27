@@ -4,7 +4,7 @@
 local s,id=GetID()
 function s.initial_effect(c)
 	--xyz summon
-	Xyz.AddProcedure(c,nil,7,3,nil,nil,99)
+	Xyz.AddProcedure(c,nil,7,3,nil,nil,Xyz.InfiniteMats)
 	c:EnableReviveLimit()
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
@@ -97,9 +97,9 @@ function s.copycon(e,tp,eg,ep,ev,re,r,rp)
 		and (not con or con(e,tp,eg,ep,ev,re,r,rp))
 end
 function s.copycost(e,tp,eg,ep,ev,re,r,rp,chk)
-	if chk==0 then return Duel.CheckLPCost(tp,400) end
+	if chk==0 then return true end
 	Duel.Hint(HINT_CARD,0,e:GetOwner():GetOriginalCode())
-	Duel.PayLPCost(tp,400)
+	Duel.Recover(tp,500,REASON_COST)
 	e:GetOwner():RegisterFlagEffect(id,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,0,1)
 end
 function s.xyztg(e,c)

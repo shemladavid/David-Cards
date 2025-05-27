@@ -68,11 +68,18 @@ function s.shufflefilter(c)
 	return c:IsSetCard(SET_DUAL_AVATAR) and c:IsMonster() and c:IsAbleToDeck()
 end
 function s.stage2(e,tc,tp,sg,chk)
-	return true
+	if chk==1 then
+		local todeck=sg:Filter(Card.IsLocation,nil,LOCATION_GRAVE)
+		if #todeck>0 then
+			Duel.SendtoDeck(todeck,nil,SEQ_DECKSHUFFLE,REASON_EFFECT+REASON_MATERIAL+REASON_FUSION)
+			sg:Sub(todeck) -- remove from sg since they've been processed
+		end
+	end
 end
 function s.extratg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
 	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,0,tp,LOCATION_DECK+LOCATION_EXTRA+LOCATION_HAND+LOCATION_MZONE)
+	Duel.SetOperationInfo(0,CATEGORY_TODECK,nil,0,tp,LOCATION_GRAVE)
 end
 
 function s.thfilter(c)
