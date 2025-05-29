@@ -51,7 +51,7 @@ function s.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	Duel.RegisterEffect(e1,tp)
 	local e2=Effect.CreateEffect(e:GetHandler())
 	e2:SetProperty(EFFECT_FLAG_PLAYER_TARGET+EFFECT_FLAG_CLIENT_HINT)
-	e2:SetDescription(aux.Stringid(id,3))
+	e2:SetDescription(aux.Stringid(id,2))
 	e2:SetReset(RESET_PHASE+PHASE_END)
 	e2:SetTargetRange(1,0)
 	Duel.RegisterEffect(e2,tp)
@@ -88,7 +88,7 @@ function s.nsop(e,tp,eg,ep,ev,re,r,rp)
 
 			-- Extra Normal Summon for Winged Beast monsters
 			local sg1=Duel.GetMatchingGroup(s.sumfilter,tp,LOCATION_HAND+LOCATION_MZONE,0,nil)
-			if #sg1>0 and Duel.SelectYesNo(tp,aux.Stringid(id,4)) then
+			if #sg1>0 and Duel.SelectYesNo(tp,aux.Stringid(id,3)) then
 				Duel.BreakEffect()
 				Duel.ShuffleHand(tp)
 				Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SUMMON)

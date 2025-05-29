@@ -24,6 +24,19 @@ function s.initial_effect(c)
 	e2:SetCondition(s.banishcon)
 	e2:SetValue(s.aclimit)
 	c:RegisterEffect(e2)
+
+	-- Switch all monsters to face-up attack position and prevent position change
+	local e3=Effect.CreateEffect(c)
+	e3:SetType(EFFECT_TYPE_FIELD)
+	e3:SetCode(EFFECT_SET_POSITION)
+	e3:SetProperty(EFFECT_FLAG_SET_AVAILABLE)
+	e3:SetRange(LOCATION_MZONE)
+	e3:SetTargetRange(LOCATION_MZONE,LOCATION_MZONE)
+	e3:SetValue(POS_FACEUP_ATTACK+NO_FLIP_EFFECT)
+	c:RegisterEffect(e3)
+	local e4=e3:Clone()
+	e4:SetCode(EFFECT_CANNOT_CHANGE_POSITION)
+	c:RegisterEffect(e4)
 end
 
 -- Check if the card was Tribute Summoned
@@ -80,5 +93,6 @@ end
 
 -- Prevent activation of effects of opponent's banished cards
 function s.aclimit(e,re,tp)
-	return re:IsActiveType(TYPE_SPELL+TYPE_TRAP+TYPE_MONSTER) and re:GetHandler():IsLocation(LOCATION_REMOVED) and re:GetHandlerPlayer()~=tp
+	local rc=re:GetHandler()
+	return re:IsActiveType(TYPE_SPELL+TYPE_TRAP+TYPE_MONSTER) and rc:IsLocation(LOCATION_REMOVED)
 end

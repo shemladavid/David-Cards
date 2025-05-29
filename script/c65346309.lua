@@ -47,14 +47,16 @@ function s.spfilter(c,e,tp)
 end
 
 function s.xyzfilter(c)
-	return c:IsSetCard(SET_OLD_GOD) and c:IsType(TYPE_XYZ)
+	return c:IsXyzSummonable() and c:IsSetCard(SET_OLD_GOD)
 end
 
 function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsExistingMatchingCard(s.spfilter,tp,LOCATION_DECK,0,1,nil,e,tp)
 		and Duel.GetLocationCount(tp,LOCATION_MZONE)>0 end
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK)
-	Duel.SetPossibleOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_EXTRA)
+	if Duel.IsExistingMatchingCard(s.xyzfilter,tp,LOCATION_EXTRA,0,1,nil) then
+		Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_EXTRA)
+	end
 end
 
 function s.operation(e,tp,eg,ep,ev,re,r,rp)
@@ -63,44 +65,11 @@ function s.operation(e,tp,eg,ep,ev,re,r,rp)
 	local g=Duel.SelectMatchingCard(tp,s.spfilter,tp,LOCATION_DECK,0,1,1,nil,e,tp)
 	if #g>0 and Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP_DEFENSE)>0 then
 		Duel.BreakEffect()
-		local xyzs=Duel.GetMatchingGroup(s.xyzfilter,tp,LOCATION_EXTRA,0,nil)
-		local can_summon_xyz=false
-		local valid_xyz=nil
-
-		-- Check each XYZ monster for summon possibility
-		for xyz in aux.Next(xyzs) do
-			local mg=Duel.GetMatchingGroup(Card.IsFaceup,tp,LOCATION_MZONE,0,nil)
-			local minct=xyz.minxyzct or 2
-			local maxct=xyz.maxxyzct or minct
-			local xyz_filter=xyz.xyz_filter or aux.TRUE
-			local valid_materials=mg:Filter(Card.IsCanBeXyzMaterial,nil,xyz,tp):Filter(xyz_filter,nil,xyz)
-			if #valid_materials>=minct then
-				can_summon_xyz=true
-				break
-			end
-		end
-
-		-- Ask the player only if it's possible
-		if can_summon_xyz and Duel.SelectYesNo(tp,aux.Stringid(id,1)) then
+		if Duel.IsExistingMatchingCard(s.xyzfilter,tp,LOCATION_EXTRA,0,1,nil) and Duel.SelectYesNo(tp,aux.Stringid(id,1)) then
 			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
-			local xyz=xyzs:Select(tp,1,1,nil):GetFirst()
-			if not xyz then return end
-
-			local mg=Duel.GetMatchingGroup(Card.IsFaceup,tp,LOCATION_MZONE,0,nil)
-			local minct=xyz.minxyzct or 2
-			local maxct=xyz.maxxyzct or minct
-			local xyz_filter=xyz.xyz_filter or aux.TRUE
-			local valid_materials=mg:Filter(Card.IsCanBeXyzMaterial,nil,xyz,tp):Filter(xyz_filter,nil,xyz)
-
-			if #valid_materials>=minct then
-				Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_XMATERIAL)
-				local mat=valid_materials:Select(tp,minct,minct,nil)
-				if #mat>0 then
-					xyz:SetMaterial(mat)
-					Duel.Overlay(xyz,mat)
-					Duel.SpecialSummon(xyz,SUMMON_TYPE_XYZ,tp,tp,false,false,POS_FACEUP)
-					xyz:CompleteProcedure()
-				end
+			local tc=Duel.SelectMatchingCard(tp,s.xyzfilter,tp,LOCATION_EXTRA,0,1,1,nil):GetFirst()
+			if tc then
+				Duel.XyzSummon(tp,tc)
 			end
 		end
 	end
