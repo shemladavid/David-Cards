@@ -5,7 +5,8 @@ local selfs={}
 if self_table then
 	function self_table.initial_effect(c) table.insert(selfs,c) end
 end
-local id=511005092
+-- local id=511005092
+local id=511005088
 if self_code then id=self_code end
 if not SealedDuel then
 	SealedDuel={}
@@ -160,7 +161,7 @@ if not SealedDuel then
 		[43586926]={ [1]={43586926,511000868}; };
 		[30312361]={ [1]={30312361,511001926}; };
 		[3657444]={ [1]={3657444,511002464}; };
-		[14785765]={ [1]={14785765,511001961}; };
+		[14785765]={ [1]={14785765}; };
 		[15894048]={ [1]={15894048,511003009}; };
 		[8483333]={ [1]={8483333,511002425}; };
 		[55690251]={ [1]={55690251,511002277}; };
