@@ -25,7 +25,8 @@ function s.initial_effect(c)
     e3:SetType(EFFECT_TYPE_QUICK_O)
     e3:SetCode(EVENT_FREE_CHAIN)
     e3:SetRange(LOCATION_SZONE)
-    e3:SetCountLimit(1)
+    e3:SetCountLimit(1, id)
+    e3:SetHintTiming(0, TIMINGS_CHECK_MONSTER_E + TIMING_END_PHASE)
     e3:SetProperty(EFFECT_FLAG_CARD_TARGET)
     e3:SetHintTiming(0, TIMINGS_CHECK_MONSTER_E)
     e3:SetCondition(s.descon)
@@ -41,17 +42,6 @@ function s.initial_effect(c)
     e4:SetCondition(s.xyzcondition)
     e4:SetOperation(s.xyzoperation)
     c:RegisterEffect(e4)
-
-    -- Reattach detached Xyz materials (e5)
-    local e5 = Effect.CreateEffect(c)
-    e5:SetDescription(aux.Stringid(id, 2))
-    e5:SetType(EFFECT_TYPE_FIELD + EFFECT_TYPE_TRIGGER_F)
-    e5:SetCode(EVENT_DETACH_MATERIAL)
-    e5:SetProperty(EFFECT_FLAG_DELAY)
-    e5:SetRange(LOCATION_SZONE)
-    e5:SetCondition(s.attachback_condition)
-    e5:SetOperation(s.attachback_operation)
-    c:RegisterEffect(e5)
 
     -- Global override: while a face-up copy of this card is on the field, 
     -- all monsters are treated as having every race and every attribute.
@@ -133,23 +123,26 @@ function s.condition(e, tp, eg, ep, ev, re, r, rp)
 end
 
 function s.operation(e, tp, eg, ep, ev, re, r, rp)
-    local g = Duel.GetDecktopGroup(1 - tp, Duel.GetFieldGroupCount(tp, 0, LOCATION_DECK)) -- Get the remaining cards in opponent's deck
-    if #g > 3 then
-        g = Duel.GetDecktopGroup(1 - tp, 3)
-    end
+    local g = Group.CreateGroup()
     -- Attach 3 new cards for each Xyz monster involved
     local processed = Group.CreateGroup() -- Track monsters that have already received cards
     for tc in aux.Next(eg) do
         if tc:IsControler(tp) and tc:IsType(TYPE_XYZ) and not processed:IsContains(tc) then
-            Duel.Overlay(tc, g) -- Attach the cards to the current Xyz monster
-            Duel.Recover(tp, #g * 1000, REASON_EFFECT) -- Recover life points
-            processed:AddCard(tc) -- Mark this monster as processed
-
-            -- Refresh the top 3 cards for the next monster
-            g = Duel.GetDecktopGroup(1 - tp, Duel.GetFieldGroupCount(tp, 0, LOCATION_DECK)) -- Get the remaining cards in opponent's deck
+            g = Duel.GetDecktopGroup(1 - tp, Duel.GetFieldGroupCount(1 - tp, 0, LOCATION_DECK)) -- Get the remaining cards in opponent's deck
             if #g > 3 then
                 g = Duel.GetDecktopGroup(1 - tp, 3)
             end
+            if #g == 0 then
+                for i = 1, 3 do
+                    local code = 12345644
+                    local card = Duel.CreateToken(tp, code)
+                    Duel.SendtoDeck(card, 1 - tp, SEQ_DECKTOP, REASON_RULE)
+                end
+                g = Duel.GetDecktopGroup(1 - tp, 3)
+            end
+            Duel.Overlay(tc, g) -- Attach the cards to the current Xyz monster
+            Duel.Recover(tp, #g * 1000, REASON_EFFECT) -- Recover life points
+            processed:AddCard(tc) -- Mark this monster as processed
         end
     end
 end
@@ -181,21 +174,36 @@ function s.desop(e, tp, eg, ep, ev, re, r, rp)
     end
 end
 
+function s.xyzfilter(c)
+    return c:IsFaceup() and c:IsType(TYPE_XYZ) and c:GetOverlayCount() == 0
+end
+
 -- Condition to check if you control an Xyz Monster with no materials
 function s.xyzcondition(e, tp, eg, ep, ev, re, r, rp)
-    local g = Duel.GetMatchingGroup(function(c) return c:IsType(TYPE_XYZ) and c:GetOverlayCount() == 0 end, tp, LOCATION_MZONE, 0, nil)
-    return #g > 0 and Duel.GetFieldGroupCount(tp, 0, LOCATION_DECK) >= 3
+    return Duel.IsExistingMatchingCard(s.xyzfilter, tp, LOCATION_MZONE, 0, 1, nil)
 end
 
 -- Operation to attach the top 3 cards of the opponent's deck to the Xyz Monster
 function s.xyzoperation(e, tp, eg, ep, ev, re, r, rp)
-    local g = Duel.GetMatchingGroup(function(c) return c:IsType(TYPE_XYZ) and c:GetOverlayCount() == 0 end, tp, LOCATION_MZONE, 0, nil)
-    if #g > 0 then
-        for xyz in aux.Next(g) do
-            local deck_g = Duel.GetDecktopGroup(1 - tp, 3) -- Get the top 3 cards of opponent's deck
-            if #deck_g > 0 then
+    local g_xyz = Duel.GetMatchingGroup(s.xyzfilter, tp, LOCATION_MZONE, 0, nil)
+    local g = Group.CreateGroup()
+    if #g_xyz > 0 then
+        for xyz in aux.Next(g_xyz) do
+            g = Duel.GetDecktopGroup(1 - tp, Duel.GetFieldGroupCount(1 - tp, 0, LOCATION_DECK)) -- Get the remaining cards in opponent's deck
+            if #g > 3 then
+                g = Duel.GetDecktopGroup(1 - tp, 3)
+            end
+            if #g == 0 then
+                for i = 1, 3 do
+                    local code = 12345644
+                    local card = Duel.CreateToken(tp, code)
+                    Duel.SendtoDeck(card, 1 - tp, SEQ_DECKTOP, REASON_RULE)
+                end
+                g = Duel.GetDecktopGroup(1 - tp, 3)
+            end
+            if #g > 0 then
                 Duel.DisableShuffleCheck()
-                Duel.Overlay(xyz, deck_g) -- Attach the cards to the Xyz monster
+                Duel.Overlay(xyz, g) -- Attach the cards to the Xyz monster
             end
         end
     end
@@ -204,22 +212,4 @@ end
 -- Filter to check for a face-up copy of this card in the Spell & Trap Zone.
 function s.filter(c)
     return c:IsFaceup() and c:IsCode(id)
-end
-
-function s.attachback_condition(e, tp, eg, ep, ev, re, r, rp)
-    -- Check if any of the detached cards were removed from an Xyz monster you control
-    return eg:IsExists(function(c)
-        local rc = c:GetReasonCard()
-        return rc and rc:IsType(TYPE_XYZ) and rc:IsControler(tp)
-    end, 1, nil)
-end
-
-function s.attachback_operation(e, tp, eg, ep, ev, re, r, rp)
-    for tc in aux.Next(eg) do
-        local rc = tc:GetReasonCard()
-        if rc and rc:IsType(TYPE_XYZ) and rc:IsControler(tp) and rc:IsFaceup() then
-            Duel.DisableShuffleCheck()
-            Duel.Overlay(rc, Group.FromCards(tc))
-        end
-    end
 end
