@@ -44,7 +44,7 @@ function s.activate(e,tp,eg,ep,ev,re,r,rp)
 		-- Change target's ATK when it is attacked
 		local e3=Effect.CreateEffect(c)
 		e3:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_CONTINUOUS)
-		e3:SetCode(EVENT_BE_BATTLE_TARGET)
+		e3:SetCode(EVENT_PRE_DAMAGE_CALCULATE)
 		e3:SetOperation(s.atkop)
 		e3:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END)
 		tc:RegisterEffect(e3)
@@ -59,11 +59,11 @@ function s.forceattack(e,tp,eg,ep,ev,re,r,rp)
 		-- Chain another attack
 		Duel.ChainAttack()
 
-		-- Double the ATK of the opponent's monster permanently
+		-- double the ATK of the opponent's monster permanently
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_SET_ATTACK_FINAL)
-		e1:SetValue(bc:GetAttack()*3)
+		e1:SetValue(bc:GetAttack()*2)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD_DISABLE+RESET_PHASE+PHASE_END)
 		bc:RegisterEffect(e1)
 	end
@@ -76,7 +76,7 @@ function s.atkop(e,tp,eg,ep,ev,re,r,rp)
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_SET_ATTACK_FINAL)
-	e1:SetValue(atk+100)
+	e1:SetValue(atk+1000)
 	e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_DAMAGE)
 	c:RegisterEffect(e1)
 end
