@@ -61,62 +61,61 @@ end
 s.listed_series = {SET_DUAL_AVATAR}
 -- Fusion filter: only “Dual Avatar” Fusion Monsters
 function s.fusfilter(c)
-	return c:IsType(TYPE_FUSION) and c:IsSetCard(SET_DUAL_AVATAR)
+    return c:IsType(TYPE_FUSION) and c:IsSetCard(SET_DUAL_AVATAR)
 end
 
 -- Extra‐materials: Hand/Deck/Extra/Field → GY  OR  GY → shuffle (flagged)
 function s.extrafil(e, tp, mg1)
-	-- (a) monsters from Hand/Deck/Extra/Field that can be sent to GY
-	local g1 = Duel.GetMatchingGroup(
-		Fusion.IsMonsterFilter(Card.IsAbleToGrave),
-		tp,
-		LOCATION_HAND + LOCATION_DECK + LOCATION_EXTRA + LOCATION_MZONE,
-		0,
-		nil
-	)
-	-- (b) "Dual Avatar" monsters in GY that can be shuffled into the Deck
-	local g2 = Duel.GetMatchingGroup(s.shufflefilter, tp, LOCATION_GRAVE, 0, nil)
-	for sc in aux.Next(g2) do
-		sc:RegisterFlagEffect(id, RESET_EVENT + RESETS_STANDARD, 0, 1)
-	end
-	g2:KeepAlive()
+    -- (a) monsters from Hand/Deck/Extra/Field that can be sent to GY
+    local g1 = Duel.GetMatchingGroup(Fusion.IsMonsterFilter(Card.IsAbleToGrave), tp,
+        LOCATION_HAND + LOCATION_DECK + LOCATION_EXTRA + LOCATION_MZONE, 0, nil)
+    -- (b) "Dual Avatar" monsters in GY that can be shuffled into the Deck
+    local g2 = Duel.GetMatchingGroup(s.shufflefilter, tp, LOCATION_GRAVE, 0, nil)
+    for sc in aux.Next(g2) do
+        sc:RegisterFlagEffect(id, RESET_EVENT + RESETS_STANDARD, 0, 1)
+    end
+    g2:KeepAlive()
 
-	-- allow mixing any combination
-	aux.FCheckAdditional = aux.FCheckMix or function() return true end
-	aux.GCheckAdditional = aux.GCheckMix or function() return true end
+    -- allow mixing any combination
+    aux.FCheckAdditional = aux.FCheckMix or function()
+        return true
+    end
+    aux.GCheckAdditional = aux.GCheckMix or function()
+        return true
+    end
 
-	return g1:Merge(g2)
+    return g1:Merge(g2)
 end
 
 -- “Dual Avatar” monsters in GY that can be shuffled
 function s.shufflefilter(c)
-	return c:IsSetCard(SET_DUAL_AVATAR) and c:IsMonster() and c:IsAbleToDeck()
+    return c:IsSetCard(SET_DUAL_AVATAR) and c:IsMonster() and c:IsAbleToDeck()
 end
 
 -- After selecting materials: only shuffle those that were flagged (originated in GY)
 function s.stage2(e, tc, tp, sg, chk)
-	if chk == 1 then
-		local todeck = sg:Filter(function(c)
-			return c:GetFlagEffect(id) > 0
-		end, nil)
-		if #todeck > 0 then
-			Duel.SendtoDeck(todeck, nil, SEQ_DECKSHUFFLE,
-			                REASON_EFFECT + REASON_MATERIAL + REASON_FUSION)
-		end
-	end
+    if chk == 1 then
+        local todeck = sg:Filter(function(c)
+            return c:GetFlagEffect(id) > 0
+        end, nil)
+        if #todeck > 0 then
+            Duel.SendtoDeck(todeck, nil, SEQ_DECKSHUFFLE, REASON_EFFECT + REASON_MATERIAL + REASON_FUSION)
+        end
+    end
 end
 
 -- Declare zones: will send some to GY and shuffle some from GY → Deck
 function s.extratg(e, tp, eg, ep, ev, re, r, rp, chk)
-	if chk == 0 then return true end
-	Duel.SetOperationInfo(0, CATEGORY_TOGRAVE, nil, 0, tp,
-	                               LOCATION_HAND + LOCATION_DECK + LOCATION_EXTRA + LOCATION_MZONE)
-	Duel.SetOperationInfo(0, CATEGORY_TODECK, nil, 0, tp, LOCATION_GRAVE)
+    if chk == 0 then
+        return true
+    end
+    Duel.SetOperationInfo(0, CATEGORY_TOGRAVE, nil, 0, tp,
+        LOCATION_HAND + LOCATION_DECK + LOCATION_EXTRA + LOCATION_MZONE)
+    Duel.SetOperationInfo(0, CATEGORY_TODECK, nil, 0, tp, LOCATION_GRAVE)
 end
 
-
 function s.thfilter(c)
-    return (c:IsSetCard(SET_DUAL_AVATAR)) and c:IsAbleToHand()
+    return (c:IsSetCard(SET_DUAL_AVATAR) or c:ListsArchetype(SET_DUAL_AVATAR)) and c:IsAbleToHand()
 end
 function s.thtg(e, tp, eg, ep, ev, re, r, rp, chk)
     if chk == 0 then

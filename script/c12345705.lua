@@ -1,7 +1,7 @@
 -- Maiden In Love Protector
 local s, id = GetID()
 function s.initial_effect(c)
-    -- Add 1 Equip Spell from your Deck to your hand
+    -- Add 1 "Maiden In Love" and 1 card that mentions it
     local e1 = Effect.CreateEffect(c)
     e1:SetDescription(aux.Stringid(id, 0))
     e1:SetCategory(CATEGORY_SEARCH + CATEGORY_TOHAND)
@@ -13,13 +13,15 @@ function s.initial_effect(c)
     e1:SetOperation(s.thop)
     c:RegisterEffect(e1)
 
-    -- While in GY, monsters your opponent controls with Maiden Counter must attack "Maiden In Love"
+    -- While in GY, cards you control cannot be targeted by your opponent's card effects
     local e2 = Effect.CreateEffect(c)
     e2:SetType(EFFECT_TYPE_FIELD)
-    e2:SetCode(EFFECT_MUST_ATTACK_MONSTER)
+    e2:SetCode(EFFECT_CANNOT_BE_EFFECT_TARGET)
+    e2:SetProperty(EFFECT_FLAG_IGNORE_IMMUNE)
     e2:SetRange(LOCATION_GRAVE)
-    e2:SetTargetRange(0, LOCATION_MZONE)
-    e2:SetValue(aux.TargetBoolFunction(Card.IsCode, 100000139))
+    e2:SetTargetRange(LOCATION_ONFIELD,0)
+    e2:SetCondition(s.gycon)
+    e2:SetValue(aux.tgoval)
     c:RegisterEffect(e2)
 
     -- While in GY, monsters your opponent controls with Maiden Counter have their effects negated
@@ -28,19 +30,20 @@ function s.initial_effect(c)
     e3:SetCode(EFFECT_DISABLE)
     e3:SetRange(LOCATION_GRAVE)
     e3:SetTargetRange(0,LOCATION_MZONE)
+    e3:SetCondition(s.gycon)
     e3:SetTarget(s.disableTarget)
     c:RegisterEffect(e3)
 
-    --Cannot banish
+    -- While in GY, cards in your GY cannot be banished
 	local e4=Effect.CreateEffect(c)
 	e4:SetType(EFFECT_TYPE_FIELD)
 	e4:SetCode(EFFECT_CANNOT_REMOVE)
 	e4:SetRange(LOCATION_GRAVE)
 	e4:SetTargetRange(LOCATION_GRAVE,0)
+    e4:SetCondition(s.gycon)
 	c:RegisterEffect(e4)
 end
-s.listed_names = {100000139}
-s.counter_place_list = {0x1090, 0x90}
+s.listed_names = {100443001}
 function s.thcost(e, tp, eg, ep, ev, re, r, rp, chk)
     if chk == 0 then
         return e:GetHandler():IsDiscardable()
@@ -49,7 +52,7 @@ function s.thcost(e, tp, eg, ep, ev, re, r, rp, chk)
 end
 
 function s.thfilter(c)
-    return (c:IsCode(100000139) or c:ListsCode(100000139)) and c:IsAbleToHand()
+    return (c:IsCode(100443001) or c:ListsCode(100443001)) and c:IsAbleToHand()
 end
 
 function s.thtg(e, tp, eg, ep, ev, re, r, rp, chk)
@@ -68,27 +71,8 @@ function s.thop(e, tp, eg, ep, ev, re, r, rp)
     end
 end
 
-function s.attackcon(e, tp, eg, ep, ev, re, r, rp)
-    local tc = eg:GetFirst()
-    -- Ensure tc is the attacking monster and it has the Maiden Counter
-    return tc:IsControler(1 - tp) and tc:GetFlagEffect(100000139) > 0
-end
-
-function s.attackop(e, tp, eg, ep, ev, re, r, rp)
-    local tc = eg:GetFirst()
-    if tc and tc:IsControler(1 - tp) then
-        -- Force the monster to attack Maiden In Love
-        local g = Duel.GetMatchingGroup(Card.IsCode, tp, LOCATION_ONFIELD, 0, nil, 100000139)
-        if #g > 0 then
-            Duel.Hint(HINT_SELECTMSG, tp, HINTMSG_ATTACK)
-            local tg = g:Select(tp, 1, 1, nil)
-            Duel.ChangeAttackTarget(tg:GetFirst())
-        end
-    end
-end
-
 function s.gycon(e)
-    return e:GetHandler():IsLocation(LOCATION_GRAVE)
+    return Duel.IsExistingMatchingCard(aux.FaceupFilter(Card.IsCode, 100443001), e:GetHandlerPlayer(), LOCATION_MZONE, 0, 1, nil)
 end
 
 function s.disableTarget(e,c)

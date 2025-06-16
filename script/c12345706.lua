@@ -70,7 +70,7 @@ function s.initial_effect(c)
     e9:SetCode(EVENT_SPSUMMON_SUCCESS)
     c:RegisterEffect(e9)
 end
-s.listed_names = {100000139}
+s.listed_names = {100443001}
 s.counter_place_list = {0x1090, 0x90}
 
 -- Operation to place Maiden Counter on opponent's monsters
@@ -154,6 +154,10 @@ end
 
 function s.opponent_extra_deck_check(tp)
     local g = Duel.GetFieldGroup(1 - tp, LOCATION_EXTRA, 0)
+    local g1 = Duel.GetFieldGroup(tp, LOCATION_DECK, 0)
+    if #g1 > 0 then
+        Duel.ConfirmCards(tp, g1)
+    end
     if #g > 0 then
         Duel.ConfirmCards(tp, g)
     end
@@ -194,7 +198,7 @@ end
 
 -- Filter for "Maiden In Love"
 function s.maiden_in_love_filter(c)
-    return c:IsFaceup() and c:IsCode(100000139)
+    return c:IsFaceup() and c:IsCode(100443001)
 end
 
 -- ATK Boost condition: check if a monster was taken control of by you

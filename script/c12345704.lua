@@ -29,10 +29,11 @@ function s.initial_effect(c)
 
     -- Negate activation
     local e3 = Effect.CreateEffect(c)
+    e3:SetDescription(aux.Stringid(id, 1))
     e3:SetCategory(CATEGORY_NEGATE + CATEGORY_DESTROY)
     e3:SetType(EFFECT_TYPE_QUICK_O)
     e3:SetCode(EVENT_CHAINING)
-	e3:SetProperty(EFFECT_FLAG_DAMAGE_STEP+EFFECT_FLAG_DAMAGE_CAL)
+    e3:SetProperty(EFFECT_FLAG_DAMAGE_STEP + EFFECT_FLAG_DAMAGE_CAL)
     e3:SetRange(LOCATION_GRAVE)
     e3:SetCountLimit(1, {id, 1})
     e3:SetCondition(s.negcon)
@@ -40,7 +41,8 @@ function s.initial_effect(c)
     e3:SetOperation(s.negop)
     c:RegisterEffect(e3)
 end
-s.listed_names = {100000139}
+s.listed_names = {100443001}
+
 function s.thcost(e, tp, eg, ep, ev, re, r, rp, chk)
     if chk == 0 then
         return e:GetHandler():IsDiscardable()
@@ -48,7 +50,7 @@ function s.thcost(e, tp, eg, ep, ev, re, r, rp, chk)
     Duel.SendtoGrave(e:GetHandler(), REASON_COST + REASON_DISCARD)
 end
 function s.thfilter(c)
-    return (c:IsCode(100000139) or c:ListsCode(100000139)) and c:IsAbleToHand()
+    return (c:IsCode(100443001) or c:ListsCode(100443001)) and c:IsAbleToHand()
 end
 function s.thtg(e, tp, eg, ep, ev, re, r, rp, chk)
     if chk == 0 then
@@ -69,7 +71,7 @@ function s.thop(e, tp, eg, ep, ev, re, r, rp)
 end
 
 function s.dmgcon(e)
-    return Duel.IsExistingMatchingCard(aux.FaceupFilter(Card.IsCode, 100000139), e:GetHandlerPlayer(), LOCATION_ONFIELD,
+    return Duel.IsExistingMatchingCard(aux.FaceupFilter(Card.IsCode, 100443001), e:GetHandlerPlayer(), LOCATION_MZONE,
         0, 1, nil)
 end
 
@@ -82,7 +84,7 @@ end
 
 function s.negcon(e, tp, eg, ep, ev, re, r, rp)
     return rp ~= tp and
-               Duel.IsExistingMatchingCard(aux.FaceupFilter(Card.IsCode, 100000139), tp, LOCATION_ONFIELD, 0, 1, nil) and
+               Duel.IsExistingMatchingCard(aux.FaceupFilter(Card.IsCode, 100443001), tp, LOCATION_MZONE, 0, 1, nil) and
                Duel.IsChainNegatable(ev)
 end
 function s.negtg(e, tp, eg, ep, ev, re, r, rp, chk)

@@ -41,6 +41,14 @@ function s.flipop(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetTargetRange(LOCATION_MZONE,0)
 	e1:SetValue(500)
 	Duel.RegisterEffect(e1,tp)
+	-- ATK boost for 4280258
+	local e1a=Effect.CreateEffect(c)
+	e1a:SetType(EFFECT_TYPE_FIELD)
+	e1a:SetCode(EFFECT_UPDATE_ATTACK)
+	e1a:SetTargetRange(LOCATION_MZONE,0)
+	e1a:SetTarget(aux.TargetBoolFunction(Card.IsCode,4280258))
+	e1a:SetValue(500)
+	Duel.RegisterEffect(e1a,tp)
 	-- Spell/Trap cannot be Targeted
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
@@ -188,6 +196,23 @@ function s.flipop(e,tp,eg,ep,ev,re,r,rp)
 	e21:SetCode(EFFECT_SPIRIT_MAYNOT_RETURN)
 	e21:SetTargetRange(LOCATION_MZONE,0)
 	Duel.RegisterEffect(e21,tp)
+	-- ATK loss recovery for your monsters
+	-- Initialize tracking table
+	if not s.global_check then
+		s.global_check=true
+		s.atk_map={}
+		local ge1=Effect.CreateEffect(c)
+		ge1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
+		ge1:SetCode(EVENT_ADJUST)
+		ge1:SetOperation(s.track_atk)
+		Duel.RegisterEffect(ge1,0)
+	end
+	local e22=Effect.CreateEffect(c)
+	e22:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
+	e22:SetCode(511001265)
+	e22:SetOperation(s.atklossop)
+	Duel.RegisterEffect(e22,tp)
+
 end
 
 function s.atkcon(e)
@@ -336,4 +361,46 @@ end
 function s.linklimit(e,c)
     if not c then return false end
     return c:IsControler(1-e:GetHandlerPlayer())
+end
+
+-- Track current ATK continuously (store all, but we care only about your monsters)
+function s.track_atk(e,tp,eg,ep,ev,re,r,rp)
+    local g=Duel.GetMatchingGroup(Card.IsFaceup,0,LOCATION_MZONE,0,nil)
+    for tc in g:Iter() do
+        local fid=tc:GetFieldID()
+        local atk=tc:GetAttack()
+        local prev = s.atk_map[fid]
+        if prev == nil then
+            s.atk_map[fid] = atk
+        elseif atk ~= prev then
+            -- Trigger only if it is your monster and it lost ATK
+            if tc:IsControler(tp) and atk < prev then
+                Duel.RaiseEvent(tc,511001265,e,REASON_EFFECT,tp,tp,0)
+            end
+            s.atk_map[fid] = atk
+        end
+    end
+end
+
+
+-- Recover lost ATK + 1000, only for your monsters
+function s.atklossop(e,tp,eg,ep,ev,re,r,rp)
+    local c=e:GetHandler()
+    for tc in eg:Iter() do
+        if tc:IsFaceup() and tc:IsControler(tp) then
+            local fid=tc:GetFieldID()
+            local prev=s.atk_map[fid]
+            if prev and tc:GetAttack()<prev then
+                local diff=prev - tc:GetAttack()
+                Duel.Hint(HINT_CARD,0,id)
+                local e1=Effect.CreateEffect(c)
+                e1:SetType(EFFECT_TYPE_SINGLE)
+                e1:SetCode(EFFECT_UPDATE_ATTACK)
+                e1:SetValue(diff + 1000)
+                e1:SetReset(RESET_EVENT+RESETS_STANDARD_DISABLE)
+                tc:RegisterEffect(e1)
+                s.atk_map[fid]=tc:GetAttack() -- update after boost
+            end
+        end
+    end
 end
