@@ -39,7 +39,7 @@ function s.initial_effect(c)
 	e4:SetType(EFFECT_TYPE_FIELD)
 	e4:SetCode(EFFECT_CANNOT_REMOVE)
 	e4:SetRange(LOCATION_GRAVE)
-	e4:SetTargetRange(LOCATION_GRAVE,0)
+	e4:SetTargetRange(LOCATION_GRAVE,LOCATION_GRAVE)
     e4:SetCondition(s.gycon)
 	c:RegisterEffect(e4)
 end
