@@ -33,13 +33,11 @@ function s.initial_effect(c)
     e4:SetTarget(s.thtg)
     e4:SetOperation(s.thop)
     c:RegisterEffect(e4)
-    -- Fusion Summon
+    -- Fusion Summon "Ojama" Fusion Monsters using materials from Hand/Deck/Extra/Field only
     local params = {
         fusfilter = s.fusfilter,
         matfilter = aux.FALSE,
-        extrafil = s.extrafil,
-        stage2 = s.stage2,
-        extratg = s.extratg
+        extrafil = s.extrafilter
     }
     local e5 = Effect.CreateEffect(c)
     e5:SetDescription(aux.Stringid(id, 1))
@@ -50,30 +48,47 @@ function s.initial_effect(c)
     e5:SetTarget(Fusion.SummonEffTG(params))
     e5:SetOperation(Fusion.SummonEffOP(params))
     c:RegisterEffect(e5)
-    -- negate
+    -- Fusion Summon "Ojama" Fusion Monsters using materials from GY or banishment
+    local params = {
+        fusfilter = aux.FilterBoolFunction(Card.IsSetCard, SET_OJAMA),
+        matfilter = aux.FALSE,
+        extrafil = s.fextra,
+        extraop = Fusion.ShuffleMaterial,
+        extratg = s.extratarget
+    }
     local e6 = Effect.CreateEffect(c)
     e6:SetDescription(aux.Stringid(id, 2))
-    e6:SetCategory(CATEGORY_NEGATE + CATEGORY_DESTROY)
-    e6:SetType(EFFECT_TYPE_QUICK_O)
-    e6:SetCode(EVENT_CHAINING)
-    e6:SetCountLimit(1, {id, 2})
-    e6:SetProperty(EFFECT_FLAG_DAMAGE_STEP + EFFECT_FLAG_DAMAGE_CAL)
+    e6:SetCategory(CATEGORY_SPECIAL_SUMMON + CATEGORY_FUSION_SUMMON)
+    e6:SetType(EFFECT_TYPE_IGNITION)
     e6:SetRange(LOCATION_FZONE)
-    e6:SetCondition(s.ngcon)
-    e6:SetTarget(s.ngtg)
-    e6:SetOperation(s.ngop)
+    e6:SetCountLimit(1, {id, 2})
+    e6:SetTarget(Fusion.SummonEffTG(params))
+    e6:SetOperation(Fusion.SummonEffOP(params))
     c:RegisterEffect(e6)
-    -- Special Summon from GY
+    -- negate
     local e7 = Effect.CreateEffect(c)
     e7:SetDescription(aux.Stringid(id, 3))
-    e7:SetCategory(CATEGORY_SPECIAL_SUMMON)
-    e7:SetType(EFFECT_TYPE_IGNITION)
-    e7:SetProperty(EFFECT_FLAG_CARD_TARGET)
-    e7:SetRange(LOCATION_FZONE)
+    e7:SetCategory(CATEGORY_NEGATE + CATEGORY_DESTROY)
+    e7:SetType(EFFECT_TYPE_QUICK_O)
+    e7:SetCode(EVENT_CHAINING)
     e7:SetCountLimit(1, {id, 3})
-    e7:SetTarget(s.sptg)
-    e7:SetOperation(s.spop)
+    e7:SetProperty(EFFECT_FLAG_DAMAGE_STEP + EFFECT_FLAG_DAMAGE_CAL)
+    e7:SetRange(LOCATION_FZONE)
+    e7:SetCondition(s.ngcon)
+    e7:SetTarget(s.ngtg)
+    e7:SetOperation(s.ngop)
     c:RegisterEffect(e7)
+    -- Special Summon from GY
+    local e8 = Effect.CreateEffect(c)
+    e8:SetDescription(aux.Stringid(id, 4))
+    e8:SetCategory(CATEGORY_SPECIAL_SUMMON)
+    e8:SetType(EFFECT_TYPE_IGNITION)
+    e8:SetProperty(EFFECT_FLAG_CARD_TARGET)
+    e8:SetRange(LOCATION_FZONE)
+    e8:SetCountLimit(1, {id, 4})
+    e8:SetTarget(s.sptg)
+    e8:SetOperation(s.spop)
+    c:RegisterEffect(e8)
 end
 s.listed_series={SET_OJAMA}
 
@@ -85,55 +100,27 @@ end
 function s.fusfilter(c)
 	return c:IsType(TYPE_FUSION) and c:IsSetCard(SET_OJAMA)
 end
--- Extra‐materials: Hand/Deck/Extra/Field → GY  OR  GY → shuffle (flagged)
-function s.extrafil(e, tp, mg1)
-	-- (a) monsters from Hand/Deck/Extra/Field that can be sent to GY
-	local g1 = Duel.GetMatchingGroup(
+-- Extra materials from Hand/Deck/Extra/Field only (no GY)
+function s.extrafilter(e, tp, mg1)
+	return Duel.GetMatchingGroup(
 		Fusion.IsMonsterFilter(Card.IsAbleToGrave),
 		tp,
 		LOCATION_HAND + LOCATION_DECK + LOCATION_EXTRA + LOCATION_MZONE,
 		0,
 		nil
 	)
-	-- (b) "Ojama" monsters in GY that can be shuffled into the Deck
-	local g2 = Duel.GetMatchingGroup(s.shufflefilter, tp, LOCATION_GRAVE, 0, nil)
-	for sc in aux.Next(g2) do
-		sc:RegisterFlagEffect(id, RESET_EVENT + RESETS_STANDARD, 0, 1)
-	end
-	g2:KeepAlive()
-
-	-- allow mixing any combination
-	aux.FCheckAdditional = aux.FCheckMix or function() return true end
-	aux.GCheckAdditional = aux.GCheckMix or function() return true end
-
-	return g1:Merge(g2)
-end
--- “Ojama” monsters in GY that can be shuffled
-function s.shufflefilter(c)
-	return c:IsSetCard(SET_OJAMA) and c:IsMonster() and c:IsAbleToDeck()
 end
 
--- After selecting materials: only shuffle those that were flagged (originated in GY)
-function s.stage2(e, tc, tp, sg, chk)
-	if chk == 1 then
-		local todeck = sg:Filter(function(c)
-			return c:GetFlagEffect(id) > 0
-		end, nil)
-		if #todeck > 0 then
-			Duel.SendtoDeck(todeck, nil, SEQ_DECKSHUFFLE,
-			                REASON_EFFECT + REASON_MATERIAL + REASON_FUSION)
-		end
-	end
+function s.fextra(e, tp, mg)
+    return Duel.GetMatchingGroup(Fusion.IsMonsterFilter(aux.NecroValleyFilter(Card.IsFaceup, Card.IsAbleToDeck)), tp,
+        LOCATION_GRAVE | LOCATION_REMOVED, 0, nil)
 end
-
--- Declare zones: will send some to GY and shuffle some from GY → Deck
-function s.extratg(e, tp, eg, ep, ev, re, r, rp, chk)
-	if chk == 0 then return true end
-	Duel.SetOperationInfo(0, CATEGORY_TOGRAVE, nil, 0, tp,
-	                               LOCATION_HAND + LOCATION_DECK + LOCATION_EXTRA + LOCATION_MZONE)
-	Duel.SetOperationInfo(0, CATEGORY_TODECK, nil, 0, tp, LOCATION_GRAVE)
+function s.extratarget(e, tp, eg, ep, ev, re, r, rp, chk)
+    if chk == 0 then
+        return true
+    end
+    Duel.SetOperationInfo(0, CATEGORY_TODECK, nil, 0, tp, LOCATION_GRAVE | LOCATION_REMOVED)
 end
-
 
 function s.thfilter(c)
     return c:IsSetCard(SET_OJAMA) and c:IsAbleToHand()
@@ -158,7 +145,7 @@ function s.thop(e, tp, eg, ep, ev, re, r, rp)
 		Duel.SendtoHand(g1,nil,REASON_EFFECT)
 		Duel.ConfirmCards(1-tp,g1)
         if Duel.IsExistingMatchingCard(Card.IsDiscardable,tp,LOCATION_HAND,0,1,nil) and
-           Duel.SelectYesNo(tp,aux.Stringid(id, 4)) then
+           Duel.SelectYesNo(tp,aux.Stringid(id, 5)) then
             Duel.BreakEffect()
             Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DISCARD)
             local dg=Duel.SelectMatchingCard(tp,Card.IsDiscardable,tp,LOCATION_HAND,0,1,1,nil)

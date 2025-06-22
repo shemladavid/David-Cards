@@ -10,9 +10,7 @@ function s.initial_effect(c)
     local params = {
         fusfilter = s.fusfilter,
         matfilter = aux.FALSE,
-        extrafil = s.extrafil,
-        stage2 = s.stage2,
-        extratg = s.extratg
+        extrafil = s.extrafilter
     }
     local e2 = Effect.CreateEffect(c)
     e2:SetDescription(aux.Stringid(id, 0))
@@ -23,95 +21,84 @@ function s.initial_effect(c)
     e2:SetTarget(Fusion.SummonEffTG(params))
     e2:SetOperation(Fusion.SummonEffOP(params))
     c:RegisterEffect(e2)
-    -- Add "Dual Avatar" monster to hand
+    -- Fusion Summon using materials from GY or banishment
+    local params = {
+        fusfilter = aux.FilterBoolFunction(Card.IsSetCard, SET_DUAL_AVATAR),
+        matfilter = aux.FALSE,
+        extrafil = s.fextra,
+        extraop = Fusion.ShuffleMaterial,
+        extratg = s.extratarget
+    }
     local e3 = Effect.CreateEffect(c)
     e3:SetDescription(aux.Stringid(id, 1))
-    e3:SetCategory(CATEGORY_TOHAND)
+    e3:SetCategory(CATEGORY_SPECIAL_SUMMON + CATEGORY_FUSION_SUMMON)
     e3:SetType(EFFECT_TYPE_IGNITION)
     e3:SetRange(LOCATION_SZONE)
     e3:SetCountLimit(1, {id, 1})
-    e3:SetTarget(s.thtg)
-    e3:SetOperation(s.thop)
+    e3:SetTarget(Fusion.SummonEffTG(params))
+    e3:SetOperation(Fusion.SummonEffOP(params))
     c:RegisterEffect(e3)
-    -- negate
+    -- Add "Dual Avatar" monster to hand
     local e4 = Effect.CreateEffect(c)
     e4:SetDescription(aux.Stringid(id, 2))
-    e4:SetCategory(CATEGORY_NEGATE + CATEGORY_DESTROY)
-    e4:SetType(EFFECT_TYPE_QUICK_O)
-    e4:SetCode(EVENT_CHAINING)
-    e4:SetCountLimit(1, {id, 2})
-    e4:SetProperty(EFFECT_FLAG_DAMAGE_STEP + EFFECT_FLAG_DAMAGE_CAL)
+    e4:SetCategory(CATEGORY_TOHAND)
+    e4:SetType(EFFECT_TYPE_IGNITION)
     e4:SetRange(LOCATION_SZONE)
-    e4:SetCondition(s.ngcon)
-    e4:SetTarget(s.ngtg)
-    e4:SetOperation(s.ngop)
+    e4:SetCountLimit(1, {id, 2})
+    e4:SetTarget(s.thtg)
+    e4:SetOperation(s.thop)
     c:RegisterEffect(e4)
-    -- Special Summon from GY
+    -- negate
     local e5 = Effect.CreateEffect(c)
     e5:SetDescription(aux.Stringid(id, 3))
-    e5:SetCategory(CATEGORY_SPECIAL_SUMMON)
-    e5:SetType(EFFECT_TYPE_IGNITION)
-    e5:SetProperty(EFFECT_FLAG_CARD_TARGET)
-    e5:SetRange(LOCATION_SZONE)
+    e5:SetCategory(CATEGORY_NEGATE + CATEGORY_DESTROY)
+    e5:SetType(EFFECT_TYPE_QUICK_O)
+    e5:SetCode(EVENT_CHAINING)
     e5:SetCountLimit(1, {id, 3})
-    e5:SetTarget(s.sptg)
-    e5:SetOperation(s.spop)
+    e5:SetProperty(EFFECT_FLAG_DAMAGE_STEP + EFFECT_FLAG_DAMAGE_CAL)
+    e5:SetRange(LOCATION_SZONE)
+    e5:SetCondition(s.ngcon)
+    e5:SetTarget(s.ngtg)
+    e5:SetOperation(s.ngop)
     c:RegisterEffect(e5)
+    -- Special Summon from GY
+    local e6 = Effect.CreateEffect(c)
+    e6:SetDescription(aux.Stringid(id, 4))
+    e6:SetCategory(CATEGORY_SPECIAL_SUMMON)
+    e6:SetType(EFFECT_TYPE_IGNITION)
+    e6:SetProperty(EFFECT_FLAG_CARD_TARGET)
+    e6:SetRange(LOCATION_SZONE)
+    e6:SetCountLimit(1, {id, 4})
+    e6:SetTarget(s.sptg)
+    e6:SetOperation(s.spop)
+    c:RegisterEffect(e6)
 end
 s.listed_series = {SET_DUAL_AVATAR}
--- Fusion filter: only “Dual Avatar” Fusion Monsters
+
+-- Fusion filter: only “Ojama” Fusion Monsters
 function s.fusfilter(c)
-    return c:IsType(TYPE_FUSION) and c:IsSetCard(SET_DUAL_AVATAR)
+	return c:IsType(TYPE_FUSION) and c:IsSetCard(SET_DUAL_AVATAR)
+end
+-- Extra materials from Hand/Deck/Extra/Field only (no GY)
+function s.extrafilter(e, tp, mg1)
+	return Duel.GetMatchingGroup(
+		Fusion.IsMonsterFilter(Card.IsAbleToGrave),
+		tp,
+		LOCATION_HAND + LOCATION_DECK + LOCATION_EXTRA + LOCATION_MZONE,
+		0,
+		nil
+	)
 end
 
--- Extra‐materials: Hand/Deck/Extra/Field → GY  OR  GY → shuffle (flagged)
-function s.extrafil(e, tp, mg1)
-    -- (a) monsters from Hand/Deck/Extra/Field that can be sent to GY
-    local g1 = Duel.GetMatchingGroup(Fusion.IsMonsterFilter(Card.IsAbleToGrave), tp,
-        LOCATION_HAND + LOCATION_DECK + LOCATION_EXTRA + LOCATION_MZONE, 0, nil)
-    -- (b) "Dual Avatar" monsters in GY that can be shuffled into the Deck
-    local g2 = Duel.GetMatchingGroup(s.shufflefilter, tp, LOCATION_GRAVE, 0, nil)
-    for sc in aux.Next(g2) do
-        sc:RegisterFlagEffect(id, RESET_EVENT + RESETS_STANDARD, 0, 1)
-    end
-    g2:KeepAlive()
-
-    -- allow mixing any combination
-    aux.FCheckAdditional = aux.FCheckMix or function()
-        return true
-    end
-    aux.GCheckAdditional = aux.GCheckMix or function()
-        return true
-    end
-
-    return g1:Merge(g2)
+function s.fextra(e, tp, mg)
+    return Duel.GetMatchingGroup(Fusion.IsMonsterFilter(aux.NecroValleyFilter(Card.IsFaceup, Card.IsAbleToDeck)), tp,
+        LOCATION_GRAVE | LOCATION_REMOVED, 0, nil)
 end
-
--- “Dual Avatar” monsters in GY that can be shuffled
-function s.shufflefilter(c)
-    return c:IsSetCard(SET_DUAL_AVATAR) and c:IsMonster() and c:IsAbleToDeck()
-end
-
--- After selecting materials: only shuffle those that were flagged (originated in GY)
-function s.stage2(e, tc, tp, sg, chk)
-    if chk == 1 then
-        local todeck = sg:Filter(function(c)
-            return c:GetFlagEffect(id) > 0
-        end, nil)
-        if #todeck > 0 then
-            Duel.SendtoDeck(todeck, nil, SEQ_DECKSHUFFLE, REASON_EFFECT + REASON_MATERIAL + REASON_FUSION)
-        end
-    end
-end
-
--- Declare zones: will send some to GY and shuffle some from GY → Deck
-function s.extratg(e, tp, eg, ep, ev, re, r, rp, chk)
+function s.extratarget(e, tp, eg, ep, ev, re, r, rp, chk)
     if chk == 0 then
         return true
     end
-    Duel.SetOperationInfo(0, CATEGORY_TOGRAVE, nil, 0, tp,
-        LOCATION_HAND + LOCATION_DECK + LOCATION_EXTRA + LOCATION_MZONE)
-    Duel.SetOperationInfo(0, CATEGORY_TODECK, nil, 0, tp, LOCATION_GRAVE)
+    Duel.SetOperationInfo(0, CATEGORY_TODECK, nil, 0, tp, LOCATION_GRAVE | LOCATION_REMOVED)
 end
 
 function s.thfilter(c)
