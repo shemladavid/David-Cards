@@ -6,6 +6,16 @@ function s.initial_effect(c)
   -- Adjust Fusion procedure to better handle specific Fusion requirements
   Fusion.AddProcMix(c,true,true,CARD_NEOS,78371393)
 
+  -- Alternative Special Summon by banishing materials from hand or Deck
+  local e00=Effect.CreateEffect(c)
+  e00:SetType(EFFECT_TYPE_FIELD)
+  e00:SetCode(EFFECT_SPSUMMON_PROC)
+  e00:SetProperty(EFFECT_FLAG_UNCOPYABLE)
+  e00:SetRange(LOCATION_EXTRA)
+  e00:SetCondition(s.altcon)
+  e00:SetOperation(s.altop)
+  c:RegisterEffect(e00)
+
   -- Cannot be Special Summon negated
   local e0 = Effect.CreateEffect(c)
   e0:SetType(EFFECT_TYPE_SINGLE)
@@ -123,9 +133,43 @@ function s.initial_effect(c)
   e16:SetTarget(s.ss_target)
   e16:SetOperation(s.ss_operation)
   c:RegisterEffect(e16)
+
+  -- all cards sent to your opponent's GY or banished
+	local e17=Effect.CreateEffect(c)
+	e17:SetType(EFFECT_TYPE_FIELD)
+	e17:SetProperty(EFFECT_FLAG_SET_AVAILABLE+EFFECT_FLAG_IGNORE_RANGE+EFFECT_FLAG_IGNORE_IMMUNE)
+	e17:SetCode(EFFECT_TO_GRAVE_REDIRECT)
+	e17:SetRange(LOCATION_MZONE)
+	e17:SetTargetRange(0,0xff)
+	e17:SetValue(LOCATION_REMOVED)
+	e17:SetTarget(s.rmtg)
+	c:RegisterEffect(e17)
 end
 s.material_setcode={0x8}
 s.material={CARD_NEOS}
+
+function s.matfilter1(c)
+	return c:IsCode(CARD_NEOS) and c:IsAbleToRemoveAsCost()
+end
+function s.matfilter2(c)
+	return c:IsCode(78371393) and c:IsAbleToRemoveAsCost()
+end
+function s.altcon(e,c)
+	if c==nil then return true end
+	local tp=c:GetControler()
+	return Duel.GetLocationCountFromEx(tp,tp,nil,c)>0
+		and Duel.IsExistingMatchingCard(s.matfilter1,tp,LOCATION_HAND+LOCATION_DECK+LOCATION_GRAVE,0,1,nil)
+		and Duel.IsExistingMatchingCard(s.matfilter2,tp,LOCATION_HAND+LOCATION_DECK+LOCATION_GRAVE,0,1,nil)
+end
+function s.altop(e,tp,eg,ep,ev,re,r,rp,c)
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)
+	local g1=Duel.SelectMatchingCard(tp,s.matfilter1,tp,LOCATION_HAND+LOCATION_DECK+LOCATION_GRAVE,0,1,1,nil)
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)
+	local g2=Duel.SelectMatchingCard(tp,s.matfilter2,tp,LOCATION_HAND+LOCATION_DECK+LOCATION_GRAVE,0,1,1,nil)
+	g1:Merge(g2)
+	Duel.Remove(g1,POS_FACEUP,REASON_COST)
+end
+
 function s.banishcon(e,tp,eg,ep,ev,re,r,rp)
   return e:GetHandler():IsSummonType(SUMMON_TYPE_SPECIAL)
 end
@@ -187,17 +231,19 @@ function s.banishop2(e,tp,eg,ep,ev,re,r,rp)
   end
 end
 
-function s.ss_filter(c)
-  return c:IsType(TYPE_MONSTER) and c:IsSummonableCard()
+function s.ss_filter(c,e,tp)
+  return c:IsFaceup() and c:IsType(TYPE_MONSTER) and c:IsCanBeSpecialSummoned(e,0,1-tp,false,false)
 end
 
-function s.ss_target(e,tp,eg,ep,ev,re,r,rp,chk)
-  if chk==0 then return Duel.IsExistingMatchingCard(s.ss_filter,tp,0,LOCATION_GRAVE+LOCATION_REMOVED,1,nil) and Duel.GetLocationCount(tp-1,LOCATION_MZONE)>0 end
+function s.ss_target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
+  if chkc then return chkc:IsControler(1-tp) and chkc:IsLocation(LOCATION_GRAVE+LOCATION_REMOVED) and s.ss_filter(chkc,e,tp) end
+  if chk==0 then 
+    return Duel.IsExistingTarget(s.ss_filter,tp,0,LOCATION_GRAVE+LOCATION_REMOVED,1,nil,e,tp) 
+      and Duel.GetLocationCount(1-tp,LOCATION_MZONE)>0 
+  end
   Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
-  local g = Duel.GetMatchingGroup(s.ss_filter,tp,0,LOCATION_GRAVE+LOCATION_REMOVED,nil)
-  local tc = g:Select(tp,1,1,nil):GetFirst()
-  Duel.SetTargetCard(tc)
-  Duel.SetOperationInfo(0, CATEGORY_SPECIAL_SUMMON, tc, 1, 0, 0)
+  local g = Duel.SelectTarget(tp,s.ss_filter,tp,0,LOCATION_GRAVE+LOCATION_REMOVED,1,1,nil,e,tp)
+  Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
 end
 
 function s.ss_operation(e,tp,eg,ep,ev,re,r,rp)
@@ -284,4 +330,8 @@ function s.ss_operation(e,tp,eg,ep,ev,re,r,rp)
     e12:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_TURN_SET)
     tc:RegisterEffect(e12,true)
   end
+end
+
+function s.rmtg(e,c)
+	return c:GetOwner()~=e:GetHandlerPlayer() and Duel.IsPlayerCanRemove(e:GetHandlerPlayer(),c)
 end
