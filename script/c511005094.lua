@@ -480,7 +480,6 @@ if not SealedDuel then
 		[37300735]={ [1]={513000036}; };
 		[38522377]={ [1]={511001644}; };
 		[39648965]={ [1]={511002530}; };
-		[39823987]={ [1]={511001981}; };
 		[40348946]={ [1]={511002755}; };
 		[40529384]={ [1]={511013005}; };
 		[40666140]={ [1]={511002796}; };
@@ -541,7 +540,6 @@ if not SealedDuel then
 		[69170557]={ [1]={511001371}; };
 		[78700060]={ [1]={511002514}; };
 		[79852326]={ [1]={511000212}; };
-		[94212438]={ [1]={513000066}; };
 		[99913726]={ [1]={511018007}; };
 		[3019642]={ [1]={511001123}; };
 		[11136371]={ [1]={511001108}; };
@@ -573,14 +571,8 @@ if not SealedDuel then
 		
 		--pack selection
 		local selectpack={}
-		for _,sel in ipairs({Duel.SelectCardsFromCodes(tp,1,7,false,true,511005095,511005096,511005097,511005098,511005099,511005100,511005101)}) do
+		for _,sel in ipairs({Duel.SelectCardsFromCodes(tp,1,1,false,true,511005095,511005096,511005097,511005098,511005099,511005100,511005101)}) do
 			selectpack[sel[2]]=true
-		end
-
-
-        --pack checking
-		if selectpack[3] and not selectpack[1] and not selectpack[2] and not selectpack[4] and not selectpack[5] and not selectpack[6] and not selectpack[7] then
-			selectpack[2]=true
 		end
 		
 		--treat as all monster types
