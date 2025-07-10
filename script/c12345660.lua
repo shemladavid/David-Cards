@@ -31,14 +31,12 @@ function s.exfilter(c,e,tp)
 end
 
 function s.extarget(e,tp,eg,ep,ev,re,r,rp,chk)
-    local ft=Duel.GetLocationCount(tp,LOCATION_MZONE)+Duel.GetLocationCountFromEx(tp,tp,nil,nil)
-    if chk==0 then return ft>0 and Duel.IsExistingMatchingCard(s.exfilter,tp,LOCATION_EXTRA,0,1,nil,e,tp) end
+    if chk==0 then return Duel.IsExistingMatchingCard(s.exfilter,tp,LOCATION_EXTRA,0,1,nil,e,tp) end
     Duel.SetOperationInfo(0, CATEGORY_SPECIAL_SUMMON, nil, 1, tp, LOCATION_EXTRA)
 end
 
 function s.exoperation(e,tp,eg,ep,ev,re,r,rp)
-    local ft=Duel.GetLocationCount(tp,LOCATION_MZONE)+Duel.GetLocationCountFromEx(tp,tp,nil,nil)
-    if ft<1 then return end
+    local ft=Duel.GetLocationCountFromEx(tp, tp, nil, nil)+ Duel.GetLocationCount(tp, LOCATION_MZONE)
     Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
     local g=Duel.SelectMatchingCard(tp,s.exfilter,tp,LOCATION_EXTRA,0,1,math.min(ft,6),nil,e,tp)
     if #g>0 then
