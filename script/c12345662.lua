@@ -53,10 +53,10 @@ function s.initial_effect(c)
 	e6:SetCode(EVENT_FLIP_SUMMON_SUCCESS)
 	c:RegisterEffect(e6)
 end
-s.counter_place_list={0x1019}
-s.listed_series={0x18}
+s.counter_place_list={COUNTER_FOG}
+s.listed_series={SET_CLOUDIAN}
 function s.thfilter(c)
-	return c:IsSetCard(0x18) and c:IsAbleToHand()
+	return c:IsSetCard(SET_CLOUDIAN) and c:IsAbleToHand()
 end
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_GRAVE+LOCATION_DECK,0,1,nil) end
@@ -72,7 +72,7 @@ function s.thop(e,tp,eg,ep,ev,re,r,rp)
 	end
 end
 function s.nsfilter(c)
-	return c:IsSetCard(0x18) and c:IsSummonable(true,nil)
+	return c:IsSetCard(SET_CLOUDIAN) and c:IsSummonable(true,nil)
 end
 function s.nstg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0 and Duel.IsExistingMatchingCard(s.nsfilter,tp,LOCATION_HAND,0,1,nil) end
@@ -90,8 +90,8 @@ function s.discon(e,tp,eg,ep,ev,re,r,rp)
 	return rp~=tp and not e:GetHandler():IsStatus(STATUS_BATTLE_DESTROYED) and Duel.IsChainNegatable(ev)
 end
 function s.discost(e,tp,eg,ep,ev,re,r,rp,chk)
-	if chk==0 then return Duel.IsCanRemoveCounter(tp,1,1,0x1019,3,REASON_COST) end
-	Duel.RemoveCounter(tp,1,1,0x1019,3,REASON_COST)
+	if chk==0 then return Duel.IsCanRemoveCounter(tp,1,1,COUNTER_FOG,3,REASON_COST) end
+	Duel.RemoveCounter(tp,1,1,COUNTER_FOG,3,REASON_COST)
 end
 function s.distg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
@@ -110,7 +110,7 @@ function s.placeCounters(e,tp,eg,ep,ev,re,r,rp)
     while tc do
         if tc:IsType(TYPE_MONSTER) then
             local count=tc:GetLevel()+tc:GetRank()+tc:GetLink()
-            tc:AddCounter(0x1019,count)
+            tc:AddCounter(COUNTER_FOG,count)
         end
         tc = eg:GetNext()
     end

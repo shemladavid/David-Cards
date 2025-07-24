@@ -10,14 +10,15 @@ function s.initial_effect(c)
     e1:SetOperation(s.activate)
     c:RegisterEffect(e1)
 end
-local EXCLUDED_CODE = 95453143
+local EXCLUDED_CODE1 = 95453143
+local EXCLUDED_CODE2 = 26462013
 function s.activate(e,tp,eg,ep,ev,re,r,rp)
     local g1=Duel.GetFieldGroup(tp,LOCATION_EXTRA,0)
     local g2=Duel.GetFieldGroup(1-tp,LOCATION_EXTRA,0)
     local g=Group.CreateGroup()
     g:Merge(g1)
     g:Merge(g2)
-    local sg=g:Filter(function(c) return c:GetCode()~=EXCLUDED_CODE end,nil)
+    local sg=g:Filter(function(c) return c:GetCode()~=EXCLUDED_CODE1 and c:GetCode()~=EXCLUDED_CODE2 end,nil)
     if #sg==0 then return end
     Duel.SendtoGrave(sg,REASON_EFFECT)
 end

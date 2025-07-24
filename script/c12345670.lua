@@ -23,7 +23,7 @@ function s.initial_effect(c)
 	e3:SetCode(EFFECT_UPDATE_ATTACK)
 	e3:SetRange(LOCATION_SZONE)
 	e3:SetTargetRange(LOCATION_MZONE,LOCATION_MZONE)
-	e3:SetTarget(aux.TargetBoolFunction(Card.IsSetCard,0x18))
+	e3:SetTarget(aux.TargetBoolFunction(Card.IsSetCard,SET_CLOUDIAN))
 	e3:SetValue(s.atkval)
 	c:RegisterEffect(e3)
 	--move to field
@@ -39,8 +39,8 @@ function s.initial_effect(c)
 	e5:SetCode(EVENT_REMOVE)
 	c:RegisterEffect(e5)
 end
-s.listed_series={0x18}
-s.counter_place_list={0x109}
+s.listed_series={SET_CLOUDIAN}
+s.counter_place_list={COUNTER_FOG}
 s.listed_names={90135989}
 function s.placeCounters(e,tp,eg,ep,ev,re,r,rp)
 	if not e:GetHandler():IsRelateToEffect(e) then return end
@@ -49,12 +49,12 @@ function s.placeCounters(e,tp,eg,ep,ev,re,r,rp)
 	for tc in aux.Next(g) do
 		if tc:IsType(TYPE_MONSTER) then
 			local count=tc:GetLevel()+tc:GetRank()+tc:GetLink()
-			tc:AddCounter(0x1019,count)
+			tc:AddCounter(COUNTER_FOG,count)
 		end
 	end
 end
 function s.atkval(e,c)
-	return Duel.GetCounter(0,1,1,0x1019)*100
+	return Duel.GetCounter(0,1,1,COUNTER_FOG)*100
 end
 function s.tffilter(c)
 	return c:IsCode(90135989) and not c:IsForbidden()

@@ -3,14 +3,14 @@ local s,id=GetID()
 function s.initial_effect(c)
 	c:EnableReviveLimit()
 --synchro summon
-	Synchro.AddProcedure(c,nil,1,1,Synchro.NonTunerEx(Card.IsSetCard,0x18),1,99,s.matfilter)
+	Synchro.AddProcedure(c,nil,1,1,Synchro.NonTunerEx(Card.IsSetCard,SET_CLOUDIAN),1,99,s.matfilter)
 	--battle indestructable
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_INDESTRUCTABLE_BATTLE)
 	e1:SetValue(1)
 	c:RegisterEffect(e1)
-	--Self destruction if in defense position
+	--selfdes
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
@@ -70,13 +70,13 @@ function s.initial_effect(c)
 	e8:SetRange(LOCATION_MZONE)
 	e8:SetTargetRange(LOCATION_MZONE,0)
 	e8:SetTarget(s.protectionfilter)
-	e8:SetValue(1)
+	e8:SetValue(aux.tgoval)
 	c:RegisterEffect(e8)
 end
-s.counter_place_list={0x109}
-s.listed_series={0x18}
+s.counter_place_list={COUNTER_FOG}
+s.listed_series={SET_CLOUDIAN}
 function s.matfilter(c,scard,sumtype,tp)
-	return c:IsSetCard(0x18,scard,sumtype,tp) and c:GetCounter(0x1019)>0
+	return c:IsSetCard(SET_CLOUDIAN,scard,sumtype,tp) and c:GetCounter(COUNTER_FOG)>0
 end
 function s.sdcon(e)
 	return e:GetHandler():IsPosition(POS_FACEUP_DEFENSE)
@@ -85,12 +85,12 @@ function s.addcounter(e,tp,eg,ep,ev,re,r,rp)
 	local g=Duel.GetMatchingGroup(Card.IsFaceup,tp,LOCATION_MZONE,LOCATION_MZONE,nil)
 	local tc=g:GetFirst()
 	for tc in aux.Next(g) do
-		tc:AddCounter(0x1019,1)
+		tc:AddCounter(COUNTER_FOG,1)
 	end
 end
 function s.gycost(e,tp,eg,ep,ev,re,r,rp,chk)
-	if chk==0 then return Duel.IsCanRemoveCounter(tp,1,1,0x1019,3,REASON_COST) end
-	Duel.RemoveCounter(tp,1,1,0x1019,3,REASON_COST)
+	if chk==0 then return Duel.IsCanRemoveCounter(tp,1,1,COUNTER_FOG,3,REASON_COST) end
+	Duel.RemoveCounter(tp,1,1,COUNTER_FOG,3,REASON_COST)
 end
 function s.gytg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsOnField() and chkc:IsAbleToGrave() end
@@ -114,5 +114,5 @@ function s.aclimit(e,re,tp)
 	return loc == LOCATION_MZONE and re:IsActiveType(TYPE_MONSTER) and monster:GetCounter(COUNTER_FOG)>0
 end
 function s.protectionfilter(e,c)
-	return c:IsSetCard(0x18)
+	return c:IsSetCard(SET_CLOUDIAN)
 end

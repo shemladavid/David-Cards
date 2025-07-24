@@ -75,7 +75,7 @@ function s.initial_effect(c)
 end
 s.listed_series = {SET_DUAL_AVATAR}
 
--- Fusion filter: only “Ojama” Fusion Monsters
+-- Fusion filter: only “Dual Avatar” Fusion Monsters
 function s.fusfilter(c)
 	return c:IsType(TYPE_FUSION) and c:IsSetCard(SET_DUAL_AVATAR)
 end

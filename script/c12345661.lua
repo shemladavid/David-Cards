@@ -33,20 +33,20 @@ function s.initial_effect(c)
 	e4:SetOperation(s.sgop)
 	c:RegisterEffect(e4)
 end
-s.listed_series={0x18}
-s.counter_place_list={0x1019}
+s.listed_series={SET_CLOUDIAN}
+s.counter_place_list={COUNTER_FOG}
 function s.sdcon(e)
 	return e:GetHandler():IsPosition(POS_FACEUP_DEFENSE)
 end
 function s.addc(e,tp,eg,ep,ev,re,r,rp)
 	if e:GetHandler():IsRelateToEffect(e) then
-		local ct=Duel.GetMatchingGroupCount(aux.FaceupFilter(Card.IsSetCard,0x18),tp,LOCATION_MZONE,LOCATION_MZONE,nil)
-		e:GetHandler():AddCounter(COUNTER_NEED_ENABLE+0x1019,ct)
+		local ct=Duel.GetMatchingGroupCount(aux.FaceupFilter(Card.IsSetCard,SET_CLOUDIAN),tp,LOCATION_MZONE,LOCATION_MZONE,nil)
+		e:GetHandler():AddCounter(COUNTER_NEED_ENABLE+COUNTER_FOG,ct)
 	end
 end
 function s.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-	if chk==0 then return Duel.IsCanRemoveCounter(tp,1,1,0x1019,5,REASON_COST) end
-	Duel.RemoveCounter(tp,1,1,0x1019,5,REASON_COST)
+	if chk==0 then return Duel.IsCanRemoveCounter(tp,1,1,COUNTER_FOG,5,REASON_COST) end
+	Duel.RemoveCounter(tp,1,1,COUNTER_FOG,5,REASON_COST)
 end
 function s.sgtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsAbleToDeck,tp,0,LOCATION_GRAVE+LOCATION_REMOVED,1,nil) end
@@ -58,5 +58,5 @@ function s.sgop(e,tp,eg,ep,ev,re,r,rp)
 	Duel.SendtoDeck(g,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
 end
 function s.protectionfilter(e,c)
-	return c:IsSetCard(0x18)
+	return c:IsSetCard(SET_CLOUDIAN)
 end

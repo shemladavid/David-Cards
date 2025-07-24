@@ -11,12 +11,12 @@ function s.initial_effect(c)
 	e1:SetOperation(s.activate)
 	c:RegisterEffect(e1)
 end
-s.listed_series={0x18}
+s.listed_series={SET_CLOUDIAN}
 function s.filter1(c)
-	return c:IsSetCard(0x18) and c:IsType(TYPE_MONSTER) and c:IsAbleToHand()
+	return c:IsSetCard(SET_CLOUDIAN) and c:IsType(TYPE_MONSTER) and c:IsAbleToHand()
 end
 function s.filter2(c)
-	return c:IsSetCard(0x18) and c:IsType(TYPE_SPELL+TYPE_TRAP) and c:IsAbleToHand()
+	return c:IsSetCard(SET_CLOUDIAN) and c:IsType(TYPE_SPELL+TYPE_TRAP) and c:IsAbleToHand()
 end
 function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsExistingMatchingCard(s.filter1,tp,LOCATION_DECK,0,1,nil)
