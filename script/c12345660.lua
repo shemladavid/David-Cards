@@ -77,7 +77,11 @@ function s.spoperation(e,tp,eg,ep,ev,re,r,rp)
     local g=Duel.SelectMatchingCard(tp,s.spfilter,tp,LOCATION_HAND+LOCATION_DECK,0,1,math.min(ft,6),nil,e,tp)
     if #g>0 then
         for tc in aux.Next(g) do
-            Duel.SpecialSummonStep(tc,0,tp,tp,true,false,POS_FACEUP)
+            if tc:IsType(TYPE_RITUAL) then
+                Duel.SpecialSummon(tc,SUMMON_TYPE_RITUAL,tp,tp,true,false,POS_FACEUP)
+            else
+                Duel.SpecialSummonStep(tc,0,tp,tp,true,false,POS_FACEUP)
+            end
             tc:CompleteProcedure()
         end
         Duel.SpecialSummonComplete()
