@@ -46,11 +46,11 @@ end
 
 function s.thfilter(c,tp)
 	if not c:IsMonster() then return false end
-	local typ = c:GetType() & TYPE_MONSTER
-	return Duel.IsExistingMatchingCard(s.addfilter,tp,LOCATION_DECK,0,1,nil,typ)
+	local race = c:GetRace()
+	return Duel.IsExistingMatchingCard(s.addfilter,tp,LOCATION_DECK,0,1,nil,race)
 end
-function s.addfilter(c,typ)
-	return c:IsType(TYPE_MONSTER) and (c:GetType() & TYPE_MONSTER)==typ and c:IsAbleToHand()
+function s.addfilter(c,race)
+	return c:IsType(TYPE_MONSTER) and c:GetRace()==race and c:IsAbleToHand()
 end
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then 
@@ -63,13 +63,11 @@ function s.thop(e,tp,eg,ep,ev,re,r,rp)
 	local g=Duel.SelectMatchingCard(tp,s.thfilter,tp,LOCATION_HAND,0,1,1,nil,tp)
 	local tc=g:GetFirst()
 	if not tc then return end
-	local typ = tc:GetType() & TYPE_MONSTER
-
+	local race = tc:GetRace()
 	Duel.ConfirmCards(1-tp,tc)
 	Duel.ShuffleHand(tp)
-
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)
-	local dg=Duel.SelectMatchingCard(tp,s.addfilter,tp,LOCATION_DECK,0,1,1,nil,typ)
+	local dg=Duel.SelectMatchingCard(tp,s.addfilter,tp,LOCATION_DECK,0,1,1,nil,race)
 	if #dg>0 then
 		local addcard=dg:GetFirst()
 		Duel.SendtoHand(addcard,tp,REASON_EFFECT)

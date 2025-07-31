@@ -42,7 +42,7 @@ function s.initial_effect(c)
 	e3:SetRange(LOCATION_MZONE)
 	e3:SetHintTiming(0,TIMING_END_PHASE)
 	e3:SetProperty(EFFECT_FLAG_CARD_TARGET)
-	e3:SetCountLimit(1)
+	e3:SetCountLimit(1, id)
 	e3:SetCondition(s.banishcon)
 	e3:SetCost(s.banishcost)
 	e3:SetTarget(s.banishtg)
@@ -58,7 +58,7 @@ function s.initial_effect(c)
 	e4:SetValue(0x1)
 	c:RegisterEffect(e4)
 end
-s.listed_series={0x16f}
+s.listed_series={SET_FLOOWANDEREEZE}
 function s.trsumcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsSummonType(SUMMON_TYPE_TRIBUTE)
 end
@@ -104,9 +104,15 @@ end
 function s.banishcon(e,tp,eg,ep,ev,re,r,rp)
 	return Duel.IsExistingMatchingCard(Card.IsAbleToRemove,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,nil)
 end
+function s.removefilterhand(c)
+	return c:IsAbleToRemoveAsCost() and (c:IsSetCard(SET_FLOOWANDEREEZE) or c:IsRace(RACE_WINGEDBEAST))
+end
+function s.removefilterbanished(c)
+	return c:IsAbleToHand() and (c:IsSetCard(SET_FLOOWANDEREEZE) or c:IsRace(RACE_WINGEDBEAST))
+end
 function s.banishcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	local canBanishHand=Duel.IsExistingMatchingCard(Card.IsAbleToRemoveAsCost,tp,LOCATION_HAND,0,1,nil)
-	local canRetrieveBanished=Duel.IsExistingMatchingCard(Card.IsAbleToHand,tp,LOCATION_REMOVED,0,1,nil)
+	local canBanishHand=Duel.IsExistingMatchingCard(s.removefilterhand,tp,LOCATION_HAND,0,1,nil)
+	local canRetrieveBanished=Duel.IsExistingMatchingCard(s.removefilterbanished,tp,LOCATION_REMOVED,0,1,nil)
 	if chk==0 then return canBanishHand or canRetrieveBanished end
 	local opt=0
 	if canBanishHand and canRetrieveBanished then
@@ -117,10 +123,10 @@ function s.banishcost(e,tp,eg,ep,ev,re,r,rp,chk)
 		opt=1 -- Automatically retrieve from banishment if banish is unavailable
 	end
 	if opt==0 then
-		local g=Duel.SelectMatchingCard(tp,Card.IsAbleToRemoveAsCost,tp,LOCATION_HAND,0,1,1,nil)
+		local g=Duel.SelectMatchingCard(tp,s.removefilterhand,tp,LOCATION_HAND,0,1,1,nil)
 		Duel.Remove(g,POS_FACEUP,REASON_COST)
 	else
-		local g=Duel.SelectMatchingCard(tp,Card.IsAbleToHand,tp,LOCATION_REMOVED,0,1,1,nil)
+		local g=Duel.SelectMatchingCard(tp,s.removefilterbanished,tp,LOCATION_REMOVED,0,1,1,nil)
 		Duel.SendtoHand(g,nil,REASON_COST)
 	end
 end
