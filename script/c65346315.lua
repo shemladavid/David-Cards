@@ -17,7 +17,7 @@ function s.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_INDESTRUCTABLE_EFFECT)
 	e1:SetRange(LOCATION_MZONE)
-	e1:SetRange(LOCATION_ONFIELD)
+	e1:SetTargetRange(LOCATION_ONFIELD,0)
 	e1:SetValue(1)
 	c:RegisterEffect(e1)
     -- tribute 1 Old God monster to negate card effects
