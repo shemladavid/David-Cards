@@ -108,7 +108,7 @@ function s.removefilterhand(c)
 	return c:IsAbleToRemoveAsCost() and (c:IsSetCard(SET_FLOOWANDEREEZE) or c:IsRace(RACE_WINGEDBEAST))
 end
 function s.removefilterbanished(c)
-	return c:IsAbleToHand() and (c:IsSetCard(SET_FLOOWANDEREEZE) or c:IsRace(RACE_WINGEDBEAST))
+	return c:IsAbleToHand() and (c:IsSetCard(SET_FLOOWANDEREEZE) or c:IsRace(RACE_WINGEDBEAST) and c:IsFaceup())
 end
 function s.banishcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local canBanishHand=Duel.IsExistingMatchingCard(s.removefilterhand,tp,LOCATION_HAND,0,1,nil)
