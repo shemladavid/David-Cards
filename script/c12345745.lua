@@ -1,6 +1,8 @@
 -- Lightning Typhoon
 local s, id = GetID()
+local COUNTER_LIGHTNING_TYPHOON=0x745
 function s.initial_effect(c)
+    c:EnableCounterPermit(COUNTER_LIGHTNING_TYPHOON)
     -- Activate
     local e1 = Effect.CreateEffect(c)
     e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -26,6 +28,25 @@ function s.initial_effect(c)
     e3:SetTarget(s.dessttg)
     e3:SetOperation(s.desstop)
     c:RegisterEffect(e3)
+	-- place counter
+	local e4=Effect.CreateEffect(c)
+	e4:SetDescription(aux.Stringid(id,2))
+	e4:SetCategory(CATEGORY_COUNTER)
+	e4:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_F)
+	e4:SetRange(LOCATION_SZONE)
+	e4:SetCode(EVENT_PHASE|PHASE_STANDBY)
+	e4:SetCountLimit(1)
+	e4:SetCondition(s.condition)
+	e4:SetOperation(s.operation)
+	c:RegisterEffect(e4)
+    --Monsters you control gain 500 ATK for each Lightning Typhoon Counter on this card
+	local e5=Effect.CreateEffect(c)
+	e5:SetType(EFFECT_TYPE_FIELD)
+	e5:SetCode(EFFECT_UPDATE_ATTACK)
+	e5:SetRange(LOCATION_SZONE)
+	e5:SetTargetRange(LOCATION_MZONE,0)
+	e5:SetValue(function(e,c) return e:GetHandler():GetCounter(COUNTER_LIGHTNING_TYPHOON)*500 end)
+	c:RegisterEffect(e5)
 end
 function s.desmtg(e,tp,eg,ep,ev,re,r,rp,chk)
     if chk==0 then return Duel.IsExistingMatchingCard(aux.TRUE,tp,0,LOCATION_MZONE,1,nil) end
@@ -46,4 +67,14 @@ end
 function s.desstop(e,tp,eg,ep,ev,re,r,rp)
     local sg=Duel.GetMatchingGroup(Card.IsSpellTrap,tp,0,LOCATION_ONFIELD,e:GetHandler())
 	Duel.Destroy(sg,REASON_EFFECT)
+end
+
+function s.condition(e,tp,eg,ep,ev,re,r,rp)
+	return Duel.IsTurnPlayer(tp)
+end
+function s.operation(e,tp,eg,ep,ev,re,r,rp)
+	local c=e:GetHandler()
+	if c:IsRelateToEffect(e) then
+		c:AddCounter(COUNTER_LIGHTNING_TYPHOON,1)
+	end
 end

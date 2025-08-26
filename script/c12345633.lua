@@ -80,7 +80,14 @@ function s.initial_effect(c)
     e8:SetTarget(s.sephtg)
     e8:SetOperation(s.sephop)
     c:RegisterEffect(e8)
-    
+
+    -- can be activated the turn it was Set
+    local e9=Effect.CreateEffect(c)
+    e9:SetType(EFFECT_TYPE_SINGLE)
+    e9:SetCode(EFFECT_TRAP_ACT_IN_SET_TURN)
+    e9:SetProperty(EFFECT_FLAG_SET_AVAILABLE)
+    c:RegisterEffect(e9)
+
     aux.GlobalCheck(s,function()
         s[0]=0
         s[1]=0
