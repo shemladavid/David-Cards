@@ -70,6 +70,7 @@ function s.initial_effect(c)
 	e5:SetCode(EFFECT_ADD_SETCODE)
 	e5:SetRange(LOCATION_FZONE)
 	e5:SetTargetRange(LOCATION_ALL,0)
+	e5:SetTarget(aux.TargetBoolFunction(Card.IsOriginalSetCard,SET_GLADIATOR))
 	e5:SetValue(SET_GLADIATOR_BEAST)
 	c:RegisterEffect(e5)
 end
