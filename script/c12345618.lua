@@ -12,7 +12,7 @@ function s.initial_effect(c)
 end
 s.listed_series={0xe6}
 function s.filter(c,e,tp)
-	return c:IsSetCard(0xe6) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
+	return c:IsSetCard(0xe6) and c:IsMonster() and c:IsCanBeSpecialSummoned(e,0,tp,true,false)
 end
 function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>3 and not Duel.IsPlayerAffectedByEffect(tp,CARD_BLUEEYES_SPIRIT)
@@ -25,7 +25,8 @@ function s.activate(e,tp,eg,ep,ev,re,r,rp)
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
 	local g=Duel.SelectMatchingCard(tp,s.filter,tp,LOCATION_DECK+LOCATION_GRAVE,0,4,4,nil,e,tp)
 	for tc in aux.Next(g) do
-		Duel.SpecialSummonStep(tc,0,tp,tp,false,false,POS_FACEUP_ATTACK)
+		Duel.SpecialSummonStep(tc,0,tp,tp,true,false,POS_FACEUP_ATTACK)
+		tc:CompleteProcedure()
 	end
 	Duel.SpecialSummonComplete()
 end
