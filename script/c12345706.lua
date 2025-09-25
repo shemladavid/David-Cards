@@ -70,7 +70,7 @@ function s.initial_effect(c)
     e9:SetCode(EVENT_SPSUMMON_SUCCESS)
     c:RegisterEffect(e9)
 end
-s.listed_names = {100443001}
+s.listed_names = {8445808}
 s.counter_place_list = {0x1090, 0x90}
 
 -- Operation to place Maiden Counter on opponent's monsters
@@ -198,7 +198,7 @@ end
 
 -- Filter for "Maiden In Love"
 function s.maiden_in_love_filter(c)
-    return c:IsFaceup() and c:IsCode(100443001)
+    return c:IsFaceup() and c:IsCode(8445808)
 end
 
 -- ATK Boost condition: check if a monster was taken control of by you

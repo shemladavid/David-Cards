@@ -232,7 +232,7 @@ function s.banishop2(e,tp,eg,ep,ev,re,r,rp)
 end
 
 function s.ss_filter(c,e,tp)
-  return c:IsFaceup() and c:IsType(TYPE_MONSTER) and c:IsCanBeSpecialSummoned(e,0,1-tp,false,false)
+  return c:IsFaceup() and c:IsType(TYPE_MONSTER) and c:IsCanBeSpecialSummoned(e,0,1-tp,true,false)
 end
 
 function s.ss_target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)

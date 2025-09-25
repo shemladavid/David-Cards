@@ -184,12 +184,13 @@ function s.flipop(e,tp,eg,ep,ev,re,r,rp)
 	e19:SetValue(s.linklimit)
 	Duel.RegisterEffect(e19,tp)
 	-- -- Flip Decks face-up
-	-- local e20=Effect.CreateEffect(c)
-	-- e20:SetType(EFFECT_TYPE_FIELD)
-	-- e20:SetCode(EFFECT_REVERSE_DECK)
-	-- e20:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
-	-- e20:SetValue(1)
-	-- Duel.RegisterEffect(e20,tp)
+	local e20=Effect.CreateEffect(c)
+	e20:SetType(EFFECT_TYPE_FIELD)
+	e20:SetCode(EFFECT_REVERSE_DECK)
+	e20:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
+	e20:SetCondition(s.flipdeckcon)
+	e20:SetValue(1)
+	Duel.RegisterEffect(e20,tp)
 	--Spirit monster do not have to return to the hand
 	local e21=Effect.CreateEffect(c)
 	e21:SetType(EFFECT_TYPE_FIELD)
@@ -360,6 +361,15 @@ end
 function s.linklimit(e,c)
     if not c then return false end
     return c:IsControler(1-e:GetHandlerPlayer())
+end
+
+function s.flipdeckfilter(c)
+	return c:IsOriginalCode(513000134,513000135,513000136)
+end
+
+function s.flipdeckcon(e)
+	local tp=e:GetHandlerPlayer()
+	return Duel.IsExistingMatchingCard(s.flipdeckfilter,tp,LOCATION_DECK+LOCATION_GRAVE+LOCATION_HAND+LOCATION_ONFIELD,0,1,nil,e,tp)
 end
 
 function s.track_atk(e,tp,eg,ep,ev,re,r,rp)

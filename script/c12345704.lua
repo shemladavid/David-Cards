@@ -51,7 +51,7 @@ function s.initial_effect(c)
     e4:SetValue(1)
     c:RegisterEffect(e4)
 end
-s.listed_names = {100443001}
+s.listed_names = {8445808}
 
 function s.thcost(e, tp, eg, ep, ev, re, r, rp, chk)
     if chk == 0 then
@@ -60,7 +60,7 @@ function s.thcost(e, tp, eg, ep, ev, re, r, rp, chk)
     Duel.SendtoGrave(e:GetHandler(), REASON_COST + REASON_DISCARD)
 end
 function s.thfilter(c)
-    return (c:IsCode(100443001) or c:ListsCode(100443001)) and c:IsAbleToHand()
+    return (c:IsCode(8445808) or c:ListsCode(8445808)) and c:IsAbleToHand()
 end
 function s.thtg(e, tp, eg, ep, ev, re, r, rp, chk)
     if chk == 0 then
@@ -81,7 +81,7 @@ function s.thop(e, tp, eg, ep, ev, re, r, rp)
 end
 
 function s.dmgcon(e)
-    return Duel.IsExistingMatchingCard(aux.FaceupFilter(Card.IsCode, 100443001), e:GetHandlerPlayer(), LOCATION_MZONE,
+    return Duel.IsExistingMatchingCard(aux.FaceupFilter(Card.IsCode, 8445808), e:GetHandlerPlayer(), LOCATION_MZONE,
         0, 1, nil)
 end
 
@@ -94,7 +94,7 @@ end
 
 function s.negcon(e, tp, eg, ep, ev, re, r, rp)
     return rp ~= tp and
-               Duel.IsExistingMatchingCard(aux.FaceupFilter(Card.IsCode, 100443001), tp, LOCATION_MZONE, 0, 1, nil) and
+               Duel.IsExistingMatchingCard(aux.FaceupFilter(Card.IsCode, 8445808), tp, LOCATION_MZONE, 0, 1, nil) and
                Duel.IsChainNegatable(ev)
 end
 function s.negtg(e, tp, eg, ep, ev, re, r, rp, chk)
@@ -113,5 +113,5 @@ function s.negop(e, tp, eg, ep, ev, re, r, rp)
 end
 
 function s.battlecon(e)
-    return Duel.GetTurnPlayer() ~= e:GetHandlerPlayer() and Duel.IsExistingMatchingCard(aux.FaceupFilter(Card.IsCode, 100443001), e:GetHandlerPlayer(), LOCATION_MZONE, 0, 1, nil)
+    return Duel.GetTurnPlayer() ~= e:GetHandlerPlayer() and Duel.IsExistingMatchingCard(aux.FaceupFilter(Card.IsCode, 8445808), e:GetHandlerPlayer(), LOCATION_MZONE, 0, 1, nil)
 end
