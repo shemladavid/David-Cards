@@ -28,6 +28,7 @@ function s.initial_effect(c)
     e1:SetCode(EFFECT_INDESTRUCTABLE_BATTLE)
     e1:SetRange(LOCATION_MZONE)
     e1:SetTargetRange(LOCATION_MZONE,0)
+    e1:SetTarget(aux.TargetBoolFunction(Card.IsSetCard,SET_OLD_GOD))
     e1:SetValue(1)
     c:RegisterEffect(e1)
     -- discard 1 random card from your opponent's hand
