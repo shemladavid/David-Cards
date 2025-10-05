@@ -37,6 +37,7 @@ function s.initial_effect(c)
 end
 local SET_OLD_GOD=0x653 
 s.listed_series={SET_OLD_GOD}
+s.listed_names={id}
 function s.spconlimit(e,se,sp,st)
 	return se:IsHasType(EFFECT_TYPE_ACTIONS) and se:GetHandler():IsSetCard(SET_OLD_GOD)
 end
@@ -69,7 +70,7 @@ function s.spop(e,tp,eg,ep,ev,re,r,rp)
 end
 
 function s.searchfilter(c)
-    return c:IsSetCard(SET_OLD_GOD) and c:IsAbleToHand()
+    return c:IsSetCard(SET_OLD_GOD) and c:IsAbleToHand() and not c:IsCode(id)
 end
 function s.searchtg(e,tp,eg,ep,ev,re,r,rp,chk)
     if chk==0 then return Duel.IsExistingMatchingCard(s.searchfilter,tp,LOCATION_DECK,0,1,nil) end

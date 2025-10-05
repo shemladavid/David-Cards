@@ -145,27 +145,45 @@ function s.tdfilter(c)
     return c:IsSetCard(SET_OLD_GOD) and c:IsAbleToDeck()
 end
 function s.milltg(e,tp,eg,ep,ev,re,r,rp,chk)
-    local gy=Duel.GetMatchingGroup(s.tdfilter,tp,LOCATION_GRAVE,0,nil)
-    if chk==0 then return #gy>0 and Duel.IsExistingMatchingCard(Card.IsAbleToRemove,tp,0,LOCATION_ONFIELD+LOCATION_GRAVE,1,nil) end
-    Duel.SetOperationInfo(0,CATEGORY_TODECK,gy,1,0,0)
+    if chk==0 then return Duel.IsExistingMatchingCard(Card.IsAbleToRemove,tp,0,LOCATION_ONFIELD+LOCATION_GRAVE,1,nil) end
+	local gy = Duel.GetMatchingGroup(s.tdfilter,tp,LOCATION_GRAVE,0,nil)
+    -- store N = current number of Old God in GY (this is BEFORE the shuffle)
+    local N = #gy
+    e:SetLabel(N)
     Duel.SetOperationInfo(0,CATEGORY_REMOVE,nil,1,1-tp,LOCATION_ONFIELD+LOCATION_GRAVE)
 end
 function s.millop(e,tp,eg,ep,ev,re,r,rp)
-    local g=Duel.GetMatchingGroup(s.tdfilter,tp,LOCATION_GRAVE,0,nil)
-    if #g==0 then return end
-    Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)
-    local sg=Duel.SelectMatchingCard(tp,s.tdfilter,tp,LOCATION_GRAVE,0,1,#g,nil)
-    if #sg>0 then
-        local ct=Duel.SendtoDeck(sg,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
-        if ct>0 then
-            local og=Duel.GetMatchingGroup(Card.IsAbleToRemove,tp,0,LOCATION_ONFIELD+LOCATION_GRAVE,nil)
-            if #og>0 and Duel.SelectYesNo(tp,aux.Stringid(id,3)) then
-                Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)
-                local rg=og:Select(tp,0,math.min(ct,#og),nil)
-                if #rg>0 then
-                    Duel.Remove(rg,POS_FACEUP,REASON_EFFECT)
+    local N = e:GetLabel() or 0
+    if N<=0 then return end
+
+    local gy = Duel.GetMatchingGroup(s.tdfilter,tp,LOCATION_GRAVE,0,nil)
+
+    local ct_shuffled = 0
+    if #gy>0 then
+        if Duel.SelectYesNo(tp,aux.Stringid(id,3)) then
+            Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)
+            local sg = gy:Select(tp,0,#gy,nil)
+            if #sg>0 then
+                local moved = Duel.SendtoDeck(sg,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
+                if moved>0 then
+                    local og = Duel.GetOperatedGroup()
+                    ct_shuffled = og:FilterCount(Card.IsLocation,nil,LOCATION_DECK)
                 end
             end
+        end
+    end
+
+    local og2 = Duel.GetMatchingGroup(Card.IsAbleToRemove,tp,0,LOCATION_ONFIELD+LOCATION_GRAVE,nil)
+    if #og2==0 then return end
+
+    Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)
+    local maxban = math.min(N,#og2)
+    local rg = og2:Select(tp,1,maxban,nil)
+    if #rg>0 then
+        if ct_shuffled>0 then
+            Duel.Remove(rg,POS_FACEDOWN,REASON_EFFECT)
+        else
+            Duel.Remove(rg,POS_FACEUP,REASON_EFFECT)
         end
     end
 end
