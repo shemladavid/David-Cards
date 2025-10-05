@@ -101,6 +101,11 @@ function s.negop(e,tp,eg,ep,ev,re,r,rp)
 		e2:SetValue(RESET_TURN_SET)
 		e2:SetReset(RESET_EVENT|RESETS_STANDARD)
 		tc:RegisterEffect(e2)
+		local e3=Effect.CreateEffect(c)
+		e3:SetType(EFFECT_TYPE_SINGLE)
+		e3:SetCode(EFFECT_CANNOT_TRIGGER)
+		e3:SetReset(RESET_EVENT|RESETS_STANDARD)
+		tc:RegisterEffect(e3)
 	end
 end
 
