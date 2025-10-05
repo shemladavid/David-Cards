@@ -81,5 +81,16 @@ function s.setop(e,tp,eg,ep,ev,re,r,rp)
 	local g=Duel.SelectMatchingCard(tp,s.setfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if #g>0 then
 		Duel.SSet(tp,g:GetFirst())
+		--Can be activated this turn
+		local e1=Effect.CreateEffect(e:GetHandler())
+		e1:SetDescription(aux.Stringid(id,2))
+		e1:SetType(EFFECT_TYPE_SINGLE)
+		e1:SetProperty(EFFECT_FLAG_SET_AVAILABLE+EFFECT_FLAG_CLIENT_HINT)
+		e1:SetCode(EFFECT_TRAP_ACT_IN_SET_TURN)
+		e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END)
+		g:GetFirst():RegisterEffect(e1)
+		local e2=e1:Clone()
+		e2:SetCode(EFFECT_QP_ACT_IN_SET_TURN)
+		g:GetFirst():RegisterEffect(e2)
 	end
 end
