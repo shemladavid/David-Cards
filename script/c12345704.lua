@@ -13,7 +13,7 @@ function s.initial_effect(c)
     e1:SetOperation(s.thop)
     c:RegisterEffect(e1)
 
-    -- Take no effect damage
+    -- Take no damage
     local e2 = Effect.CreateEffect(c)
     e2:SetType(EFFECT_TYPE_FIELD)
     e2:SetCode(EFFECT_CHANGE_DAMAGE)
@@ -26,6 +26,11 @@ function s.initial_effect(c)
     local e2a = e2:Clone()
     e2a:SetCode(EFFECT_NO_EFFECT_DAMAGE)
     c:RegisterEffect(e2a)
+    local e2b = e2:Clone()
+    e2b:SetCode(EFFECT_AVOID_BATTLE_DAMAGE)
+    e2b:SetProperty(EFFECT_FLAG_IGNORE_IMMUNE)
+    e2b:SetValue(1)
+    c:RegisterEffect(e2b)
 
     -- Negate activation
     local e3 = Effect.CreateEffect(c)

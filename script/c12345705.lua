@@ -34,7 +34,7 @@ function s.initial_effect(c)
     e3:SetTarget(s.disableTarget)
     c:RegisterEffect(e3)
 
-    -- While in GY, cards in your GY cannot be banished
+    -- While in GY, cards in the GY cannot be banished
 	local e4=Effect.CreateEffect(c)
 	e4:SetType(EFFECT_TYPE_FIELD)
 	e4:SetCode(EFFECT_CANNOT_REMOVE)
