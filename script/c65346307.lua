@@ -1,5 +1,6 @@
 --Ashima, the Old Goddess of Fate
 local s,id=GetID()
+local SET_OLD_GOD=0x653 
 function s.initial_effect(c)
 	c:EnableUnsummonable()
 	--Special Summon condition
@@ -9,53 +10,87 @@ function s.initial_effect(c)
 	e1:SetCode(EFFECT_SPSUMMON_CONDITION)
 	e1:SetValue(s.splimit)
 	c:RegisterEffect(e1)
-	--Special Summon this and 1 "Old God" monster from your hand or GY
-	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(id,0))
-	e2:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_SUMMON)
-	e2:SetType(EFFECT_TYPE_TRIGGER_O+EFFECT_TYPE_FIELD)
-	e2:SetProperty(EFFECT_FLAG_DELAY)
-	e2:SetCode(EVENT_SUMMON_SUCCESS)
-	e2:SetRange(LOCATION_HAND|LOCATION_GRAVE)
-	e2:SetCountLimit(1,id)
-	e2:SetCondition(s.spcon)
-	e2:SetTarget(s.sptg)
-	e2:SetOperation(s.spop)
-	c:RegisterEffect(e2)
 
-	-- Discard this card; add "Ugarit, The City of the Gods"
+	-- Prevent tribute, fusion, synchro, xyz and link summon
+	local e2=Effect.CreateEffect(c)
+	e2:SetType(EFFECT_TYPE_FIELD)
+	e2:SetProperty(EFFECT_FLAG_SET_AVAILABLE+EFFECT_FLAG_IGNORE_IMMUNE)
+	e2:SetCode(EFFECT_CANNOT_BE_FUSION_MATERIAL)
+	e2:SetRange(LOCATION_MZONE)
+	e2:SetTargetRange(LOCATION_MZONE,0)
+	e2:SetTarget(function(e,c) return c:IsSetCard(SET_OLD_GOD) end)
+	e2:SetValue(s.sumlimit)
+	c:RegisterEffect(e2)
+	local e2a=e2:Clone()
+	e2a:SetCode(EFFECT_CANNOT_BE_SYNCHRO_MATERIAL)
+	c:RegisterEffect(e2a)
+	local e2b=e2:Clone()
+	e2b:SetCode(EFFECT_CANNOT_BE_XYZ_MATERIAL)
+	c:RegisterEffect(e2b)
+	local e2c=e2:Clone()
+	e2c:SetCode(EFFECT_CANNOT_BE_LINK_MATERIAL)
+	c:RegisterEffect(e2c)
+	local e2d=Effect.CreateEffect(c)
+	e2d:SetType(EFFECT_TYPE_FIELD)
+	e2d:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
+	e2d:SetCode(EFFECT_CANNOT_RELEASE)
+	e2d:SetRange(LOCATION_MZONE)
+	e2d:SetTargetRange(0,1)
+	e2d:SetTarget(function(e,c) return c:IsSetCard(SET_OLD_GOD) end)
+	c:RegisterEffect(e2d)
+
+	--Special Summon this and 1 "Old God" monster from your hand or GY
 	local e3=Effect.CreateEffect(c)
-	e3:SetDescription(aux.Stringid(id,1))
-	e3:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
-	e3:SetType(EFFECT_TYPE_IGNITION)
-	e3:SetRange(LOCATION_HAND)
+	e3:SetDescription(aux.Stringid(id,0))
+	e3:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_SUMMON)
+	e3:SetType(EFFECT_TYPE_TRIGGER_O+EFFECT_TYPE_FIELD)
+	e3:SetProperty(EFFECT_FLAG_DELAY)
+	e3:SetCode(EVENT_SUMMON_SUCCESS)
+	e3:SetRange(LOCATION_HAND|LOCATION_GRAVE)
 	e3:SetCountLimit(1,id)
-	e3:SetCost(Cost.SelfDiscard)
-	e3:SetTarget(s.thtg)
-	e3:SetOperation(s.thop)
+	e3:SetCondition(s.spcon)
+	e3:SetTarget(s.sptg)
+	e3:SetOperation(s.spop)
 	c:RegisterEffect(e3)
 
-	-- Quick Effect: Destroy 1 card on the field
+	-- Discard this card; add "Ugarit, The City of the Gods"
 	local e4=Effect.CreateEffect(c)
-	e4:SetDescription(aux.Stringid(id,2))
-	e4:SetCategory(CATEGORY_DESTROY)
-	e4:SetType(EFFECT_TYPE_QUICK_O)
-	e4:SetCode(EVENT_FREE_CHAIN)
-	e4:SetRange(LOCATION_MZONE)
-	e4:SetProperty(EFFECT_FLAG_CARD_TARGET)
-	e4:SetHintTiming(0,TIMINGS_CHECK_MONSTER_E)
-	e4:SetCountLimit(1,{id+1})
-	e4:SetTarget(s.destg)
-	e4:SetOperation(s.desop)
+	e4:SetDescription(aux.Stringid(id,1))
+	e4:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
+	e4:SetType(EFFECT_TYPE_IGNITION)
+	e4:SetRange(LOCATION_HAND)
+	e4:SetCountLimit(1,id)
+	e4:SetCost(Cost.SelfDiscard)
+	e4:SetTarget(s.thtg)
+	e4:SetOperation(s.thop)
 	c:RegisterEffect(e4)
+
+	-- Quick Effect: Destroy 1 card on the field
+	local e5=Effect.CreateEffect(c)
+	e5:SetDescription(aux.Stringid(id,2))
+	e5:SetCategory(CATEGORY_DESTROY)
+	e5:SetType(EFFECT_TYPE_QUICK_O)
+	e5:SetCode(EVENT_FREE_CHAIN)
+	e5:SetRange(LOCATION_MZONE)
+	e5:SetProperty(EFFECT_FLAG_CARD_TARGET)
+	e5:SetHintTiming(0,TIMINGS_CHECK_MONSTER_E)
+	e5:SetCountLimit(1,{id+1})
+	e5:SetTarget(s.destg)
+	e5:SetOperation(s.desop)
+	c:RegisterEffect(e5)
 end
-local SET_OLD_GOD=0x653 
+
 s.listed_names={65346308}
 s.listed_series={SET_OLD_GOD}
 
 function s.splimit(e,se,sp,st)
 	return (st&SUMMON_TYPE_RITUAL)==SUMMON_TYPE_RITUAL
             or (se:IsHasType(EFFECT_TYPE_ACTIONS) and se:GetHandler():IsSetCard(SET_OLD_GOD))
+end
+
+function s.sumlimit(e,c)
+	if not c then return false end
+	return not c:IsControler(e:GetHandlerPlayer())
 end
 
 function s.spcon(e,tp,eg,ep,ev,re,r,rp)
