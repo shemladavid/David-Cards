@@ -178,7 +178,13 @@ function s.millop(e,tp,eg,ep,ev,re,r,rp)
 
     Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)
     local maxban = math.min(N,#og2)
-    local rg = og2:Select(tp,1,maxban,nil)
+	local rg = nil
+	if maxban==#og2 then
+		maxban = math.min(maxban,ct_shuffled)
+		rg = og2
+	else
+		rg = og2:Select(tp,maxban,maxban,nil)
+	end
     if #rg>0 then
         if ct_shuffled>0 then
             Duel.Remove(rg,POS_FACEDOWN,REASON_EFFECT)

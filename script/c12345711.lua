@@ -87,7 +87,7 @@ s.counter_place_list={COUNTER_PREDATOR}
 
 -- Add "Predaplant" or "Preda" card
 function s.thfilter(c)
-    return c:IsSetCard(0xf3) or c:IsSetCard(0x10f3) and c:IsAbleToHand()
+    return (c:IsSetCard(0xf3) or c:IsSetCard(0x10f3)) and c:IsAbleToHand()
 end
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
     if chk==0 then return Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_DECK+LOCATION_GRAVE,0,1,nil) end
