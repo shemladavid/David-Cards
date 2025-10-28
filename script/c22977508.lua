@@ -1,0 +1,55 @@
+--Abysskite Ultimail
+local s,id=GetID()
+local SET_ABYSSKITE=0x156B
+function s.initial_effect(c)
+	--spirit monsters cannot be destroyed by battle and you take no battle damage from battles involving them
+	local e1=Effect.CreateEffect(c)
+	e1:SetType(EFFECT_TYPE_ACTIVATE)
+	e1:SetCode(EVENT_FREE_CHAIN)
+	e1:SetHintTiming(0,TIMING_BATTLE_START|TIMING_CHECK_MONSTER_E)
+	e1:SetOperation(s.activate)
+	c:RegisterEffect(e1)
+    --Can be activated from the hand
+	local e2=Effect.CreateEffect(c)
+	e2:SetDescription(aux.Stringid(id,0))
+	e2:SetType(EFFECT_TYPE_SINGLE)
+	e2:SetCode(EFFECT_TRAP_ACT_IN_HAND)
+	e2:SetCondition(function(e)
+    return Duel.IsExistingMatchingCard(aux.FaceupFilter(Card.IsSetCard,SET_ABYSSKITE),e:GetHandlerPlayer(),LOCATION_MZONE,0,1,nil)
+end)
+	c:RegisterEffect(e2)
+end
+s.listed_series={SET_ABYSSKITE}
+
+function s.activate(e,tp,eg,ep,ev,re,r,rp)
+    local e1=Effect.CreateEffect(e:GetHandler())
+    e1:SetType(EFFECT_TYPE_FIELD)
+    e1:SetCode(EFFECT_AVOID_BATTLE_DAMAGE)
+    e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET+EFFECT_FLAG_CLIENT_HINT)
+    e1:SetTargetRange(1,0)
+    e1:SetCondition(function(e,tp,eg,ep,ev,re,r,rp)
+        local a=Duel.GetAttacker()
+        if not a then return false end
+        local d=Duel.GetAttackTarget()
+        if not d then return a:IsType(TYPE_SPIRIT) end
+        return a:IsType(TYPE_SPIRIT) or d:IsType(TYPE_SPIRIT)
+    end)
+    e1:SetValue(1)
+    e1:SetReset(RESET_PHASE|PHASE_END)
+    Duel.RegisterEffect(e1,tp)
+    local e2=Effect.CreateEffect(e:GetHandler())
+    e2:SetType(EFFECT_TYPE_FIELD)
+    e2:SetCode(EFFECT_INDESTRUCTABLE_BATTLE)
+    e2:SetTargetRange(LOCATION_MZONE,0)
+    e2:SetTarget(aux.TargetBoolFunction(Card.IsType,TYPE_SPIRIT))
+    e2:SetReset(RESET_PHASE|PHASE_END)
+    e2:SetValue(1)
+    Duel.RegisterEffect(e2,tp)
+    local e3=Effect.CreateEffect(e:GetHandler())
+    e3:SetProperty(EFFECT_FLAG_PLAYER_TARGET+EFFECT_FLAG_CLIENT_HINT)
+    e3:SetDescription(aux.Stringid(id,1))
+    e3:SetType(EFFECT_TYPE_FIELD)
+    e3:SetTargetRange(1,0)
+    e3:SetReset(RESET_PHASE|PHASE_END)
+    Duel.RegisterEffect(e3,tp)
+end
