@@ -22,7 +22,7 @@ function s.initial_effect(c)
     e3:SetCategory(CATEGORY_TOGRAVE)
     e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
     e3:SetCode(EVENT_SUMMON_SUCCESS)
-    e3:SetRange(LOCATION_FZONE)
+    e3:SetRange(LOCATION_SZONE)
     e3:SetProperty(EFFECT_FLAG_DELAY+EFFECT_FLAG_CARD_TARGET)
     e3:SetCountLimit(1,id,EFFECT_COUNT_CODE_CHAIN)
     e3:SetCondition(s.condition)
@@ -35,7 +35,7 @@ function s.initial_effect(c)
     e4:SetCategory(CATEGORY_DISABLE)
     e4:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
     e4:SetCode(EVENT_SUMMON_SUCCESS)
-    e4:SetRange(LOCATION_FZONE)
+    e4:SetRange(LOCATION_SZONE)
     e4:SetProperty(EFFECT_FLAG_DELAY+EFFECT_FLAG_CARD_TARGET)
     e4:SetCountLimit(1,id,EFFECT_COUNT_CODE_CHAIN)
     e4:SetCondition(s.condition)
@@ -48,7 +48,7 @@ function s.initial_effect(c)
     e5:SetCategory(CATEGORY_TODECK)
     e5:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
     e5:SetCode(EVENT_SUMMON_SUCCESS)
-    e5:SetRange(LOCATION_FZONE)
+    e5:SetRange(LOCATION_SZONE)
     e5:SetProperty(EFFECT_FLAG_DELAY+EFFECT_FLAG_CARD_TARGET)
     e5:SetCountLimit(1,id,EFFECT_COUNT_CODE_CHAIN)
     e5:SetCondition(s.condition)
@@ -60,15 +60,14 @@ s.listed_names={id}
 s.listed_series={SET_ABYSSKITE}
 
 function s.condition(e,tp,eg,ep,ev,re,r,rp)
-    local c=eg:GetFirst()
-	return c:IsOnField() and c:IsSetCard(SET_ABYSSKITE)
+    return eg:IsExists(aux.FaceupFilter(Card.IsSetCard,SET_ABYSSKITE),1,nil)
 end
 function s.stgtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
     if chkc then return chkc:IsOnField() and Card.IsAbleToGrave(chkc) end
-    if chk==0 then return Duel.GetFlagEffect(tp,22977513)==0 and Duel.IsExistingTarget(Card.IsAbleToGrave,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,nil) end
-    Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)
-    local g=Duel.SelectTarget(tp,Card.IsAbleToGrave,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,1,nil)
-    Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,g,1,0,0)
+	if chk==0 then return Duel.GetFlagEffect(tp,22977513)==0 and Duel.IsExistingTarget(Card.IsAbleToGrave,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,nil) end
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)
+	local g=Duel.SelectTarget(tp,Card.IsAbleToGrave,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,1,nil)
+	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,g,1,0,0)
 end
 function s.stgop(e,tp,eg,ep,ev,re,r,rp)
 	local tc=Duel.GetFirstTarget()
@@ -82,25 +81,26 @@ end
 function s.negtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsOnField() and Card.IsNegatable(chkc) end
 	if chk==0 then return Duel.GetFlagEffect(tp,22977514)==0 and Duel.IsExistingTarget(Card.IsNegatable,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,nil) end
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DISABLE)
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_NEGATE)
 	local g=Duel.SelectTarget(tp,Card.IsNegatable,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,1,nil)
-	Duel.SetOperationInfo(0,CATEGORY_DISABLE,g,1,0,0)
+	Duel.SetOperationInfo(0,CATEGORY_NEGATE,g,1,0,0)
 end
 function s.negop(e,tp,eg,ep,ev,re,r,rp)
+	local c=e:GetHandler()
 	local tc=Duel.GetFirstTarget()
-	if tc:IsRelateToEffect(e) and Duel.NegateRelatedChain(tc,RESET_TURN_SET) then
-		local e1=Effect.CreateEffect(e:GetHandler())
+	if tc:IsFaceup() and tc:IsRelateToEffect(e) and tc:IsCanBeDisabledByEffect(e) then
+		Duel.NegateRelatedChain(tc,RESET_TURN_SET)
+		--Negate its effects
+		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
-		e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
 		e1:SetCode(EFFECT_DISABLE)
-		e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END)
+		e1:SetReset(RESETS_STANDARD_PHASE_END)
 		tc:RegisterEffect(e1)
-		local e2=Effect.CreateEffect(e:GetHandler())
+		local e2=Effect.CreateEffect(c)
 		e2:SetType(EFFECT_TYPE_SINGLE)
-		e2:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
 		e2:SetCode(EFFECT_DISABLE_EFFECT)
 		e2:SetValue(RESET_TURN_SET)
-		e2:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END)
+		e2:SetReset(RESETS_STANDARD_PHASE_END)
 		tc:RegisterEffect(e2)
 	end
     -- mark that this effect has been used this turn
@@ -108,16 +108,16 @@ function s.negop(e,tp,eg,ep,ev,re,r,rp)
 end
 
 function s.stdtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and aux.TRUE(chkc) end
-	if chk==0 then return Duel.GetFlagEffect(tp,22977515)==0 and Duel.IsExistingTarget(aux.TRUE,tp,LOCATION_GRAVE,LOCATION_GRAVE,1,nil) end
+	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsAbleToDeck() end
+	if chk==0 then return Duel.GetFlagEffect(tp,22977515)==0 and Duel.IsExistingTarget(Card.IsAbleToDeck,tp,LOCATION_GRAVE,LOCATION_GRAVE,1,nil) end
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)
-	local g=Duel.SelectTarget(tp,aux.TRUE,tp,LOCATION_GRAVE,LOCATION_GRAVE,1,1,nil)
+	local g=Duel.SelectTarget(tp,Card.IsAbleToDeck,tp,LOCATION_GRAVE,LOCATION_GRAVE,1,1,nil)
 	Duel.SetOperationInfo(0,CATEGORY_TODECK,g,1,0,0)
 end
-function s.stdop(e,tp,eg,ep,ev,re,r,rp)
+function s.tdop(e,tp,eg,ep,ev,re,r,rp)
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		Duel.ShuffleIntoDeck(tc,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
+		Duel.SendtoDeck(tc,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
 	end
     -- mark that this effect has been used this turn
     Duel.RegisterFlagEffect(tp,22977515,RESET_PHASE+PHASE_END,0,1)

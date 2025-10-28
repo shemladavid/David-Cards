@@ -8,6 +8,7 @@ function s.initial_effect(c)
 	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
+	e1:SetCountLimit(1,id)
 	e1:SetTarget(s.target)
 	e1:SetOperation(s.activate)
 	c:RegisterEffect(e1)
@@ -44,18 +45,16 @@ function s.activate(e,tp,eg,ep,ev,re,r,rp)
 	end
 end
 
-function s.bdconfilter(c,tp)
-	return c:IsSpiritMonster() and c:IsControler(tp)
-end
 function s.bdcon(e,tp,eg,ep,ev,re,r,rp)
-	return ep==1-tp and eg:IsExists(s.bdconfilter,1,nil,tp)
+	local tc=eg:GetFirst()
+	return ep~=tp and tc:IsControler(tp) and tc:IsType(TYPE_SPIRIT)
 end
 function s.bdtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
     if chkc then return chkc:IsOnField() and Card.IsNegatable(chkc) end
 	if chk==0 then return true end
-	local b1=Duel.IsExistingTarget(tp,Card.IsAbleToGrave,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,1,nil)
+	local b1=Duel.IsExistingTarget(Card.IsAbleToGrave,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,nil)
 	local b2=Duel.IsExistingTarget(Card.IsNegatable,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,nil)
-	local b3=Duel.IsExistingTarget(tp,aux.TRUE,tp,LOCATION_GRAVE,LOCATION_GRAVE,1,1,nil)
+	local b3=Duel.IsExistingTarget(Card.IsAbleToDeck,tp,LOCATION_GRAVE,LOCATION_GRAVE,1,nil)
 	local op=Duel.SelectEffect(tp,
 		{b1,aux.Stringid(id,2)},
 		{b2,aux.Stringid(id,3)},
@@ -72,12 +71,12 @@ function s.bdtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
         e:SetProperty(EFFECT_FLAG_CARD_TARGET)
         Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_NEGATE)
         local g=Duel.SelectTarget(tp,Card.IsNegatable,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,1,nil)
-        Duel.SetOperationInfo(0,CATEGORY_DISABLE,g,1,0,0)
+        Duel.SetOperationInfo(0,CATEGORY_NEGATE,g,1,0,0)
 	elseif op==3 then
 		e:SetCategory(CATEGORY_TODECK)
         e:SetProperty(EFFECT_FLAG_CARD_TARGET)
         Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)
-        local g=Duel.SelectTarget(tp,aux.TRUE,tp,LOCATION_GRAVE,LOCATION_GRAVE,1,1,nil)
+        local g=Duel.SelectTarget(tp,Card.IsAbleToDeck,tp,LOCATION_GRAVE,LOCATION_GRAVE,1,1,nil)
         Duel.SetOperationInfo(0,CATEGORY_TODECK,g,1,0,0)
 	end
 end
@@ -91,32 +90,30 @@ function s.bdop(e,tp,eg,ep,ev,re,r,rp)
             Duel.SendtoGrave(tc,REASON_EFFECT)
         end
 	elseif op==2 then
-		--Destroy 1 Set card on the field
+		--Negate the effects of 1 card on the field
         local tc=Duel.GetFirstTarget()
-        if tc:IsRelateToEffect(e) then
+        if tc:IsFaceup() and tc:IsRelateToEffect(e) and tc:IsCanBeDisabledByEffect(e) then
             -- negate the effects / disable the card on the field
             -- try to negate any existing chains related to the card first
             Duel.NegateRelatedChain(tc,RESET_TURN_SET)
-
-            -- apply disabling effects (works for monsters/spells/traps on the field)
-            local e1=Effect.CreateEffect(e:GetHandler())
-            e1:SetType(EFFECT_TYPE_SINGLE)
-            e1:SetCode(EFFECT_DISABLE)
-            e1:SetReset(RESET_EVENT+RESETS_STANDARD)
-            tc:RegisterEffect(e1)
-
-            local e2=Effect.CreateEffect(e:GetHandler())
-            e2:SetType(EFFECT_TYPE_SINGLE)
-            e2:SetCode(EFFECT_DISABLE_EFFECT)
-            e2:SetValue(RESET_TURN_SET)
-            e2:SetReset(RESET_EVENT+RESETS_STANDARD)
-            tc:RegisterEffect(e2)
+			--Negate its effects
+			local e1=Effect.CreateEffect(c)
+			e1:SetType(EFFECT_TYPE_SINGLE)
+			e1:SetCode(EFFECT_DISABLE)
+			e1:SetReset(RESETS_STANDARD_PHASE_END)
+			tc:RegisterEffect(e1)
+			local e2=Effect.CreateEffect(c)
+			e2:SetType(EFFECT_TYPE_SINGLE)
+			e2:SetCode(EFFECT_DISABLE_EFFECT)
+			e2:SetValue(RESET_TURN_SET)
+			e2:SetReset(RESETS_STANDARD_PHASE_END)
+			tc:RegisterEffect(e2)
         end
 	elseif op==3 then
-		--Special Summon 1 "Multi Token"
+		--Shuffle 1 card from either GYs into the Deck
         local tc=Duel.GetFirstTarget()
-        if tc:IsRelateToEffect(e) then
-            Duel.ShuffleIntoDeck(tc,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
-        end
+		if tc:IsRelateToEffect(e) then
+			Duel.SendtoDeck(tc,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
+		end
 	end
 end

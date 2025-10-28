@@ -15,17 +15,21 @@ function s.initial_effect(c)
 	c:RegisterEffect(e1)
 end
 s.listed_series={SET_ABYSSKITE}
+
+function s.negfilter(c)
+	return c:IsFaceup() and c:IsSetCard(SET_ABYSSKITE) and c:IsMonster()
+end
 function s.condition(e,tp,eg,ep,ev,re,r,rp)
-	return rp~=tp and re:IsHasType(EFFECT_TYPE_ACTIVATE) and Duel.IsChainNegatable(ev)
-		and Duel.IsExistingMatchingCard(aux.FaceupFilter(Card.IsSetCard,SET_ABYSSKITE),tp,LOCATION_MZONE,0,1,nil)
+	return Duel.IsChainNegatable(ev) and (re:IsMonsterEffect() or re:IsHasType(EFFECT_TYPE_ACTIVATE))
+		and Duel.IsExistingMatchingCard(s.negfilter,tp,LOCATION_MZONE,0,1,nil)
 end
 function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
 	Duel.SetOperationInfo(0,CATEGORY_NEGATE,eg,1,0,0)
 	if re:GetHandler():IsRelateToEffect(re) then
-		local b1=Duel.IsExistingTarget(tp,Card.IsAbleToGrave,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,1,nil)
+		local b1=Duel.IsExistingTarget(Card.IsAbleToGrave,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,nil)
         local b2=Duel.IsExistingTarget(Card.IsNegatable,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,nil)
-        local b3=Duel.IsExistingTarget(tp,aux.TRUE,tp,LOCATION_GRAVE,LOCATION_GRAVE,1,1,nil)
+        local b3=Duel.IsExistingTarget(Card.IsAbleToDeck,tp,LOCATION_GRAVE,LOCATION_GRAVE,1,nil)
         local op=Duel.SelectEffect(tp,
             {b1,aux.Stringid(id,1)},
             {b2,aux.Stringid(id,2)},
@@ -42,12 +46,12 @@ function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
             e:SetProperty(EFFECT_FLAG_CARD_TARGET)
             Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_NEGATE)
             local g=Duel.SelectTarget(tp,Card.IsNegatable,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,1,nil)
-            Duel.SetOperationInfo(0,CATEGORY_DISABLE,g,1,0,0)
+            Duel.SetOperationInfo(0,CATEGORY_NEGATE,g,1,0,0)
         elseif op==3 then
             e:SetCategory(CATEGORY_TODECK)
             e:SetProperty(EFFECT_FLAG_CARD_TARGET)
             Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)
-            local g=Duel.SelectTarget(tp,aux.TRUE,tp,LOCATION_GRAVE,LOCATION_GRAVE,1,1,nil)
+            local g=Duel.SelectTarget(tp,Card.IsAbleToDeck,tp,LOCATION_GRAVE,LOCATION_GRAVE,1,1,nil)
             Duel.SetOperationInfo(0,CATEGORY_TODECK,g,1,0,0)
         end
 	end

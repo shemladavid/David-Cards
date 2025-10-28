@@ -63,8 +63,12 @@ function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK+LOCATION_GRAVE)
 end
 function s.rescon(sg,e,tp,mg)
-	return sg:FilterCount(Card.IsCode,nil,22977510)<=1
-		and sg:FilterCount(s.abysskite,nil)<=1
+	local has22977510=sg:IsExists(Card.IsCode,1,nil,22977510)
+	local abysskiteCount=sg:FilterCount(function(c)
+		return s.abysskite(c) and not c:IsCode(22977510)
+	end,nil)
+	return (not has22977510 or sg:FilterCount(Card.IsCode,nil,22977510)<=1)
+		and abysskiteCount<=1
 end
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
 	local g=Duel.GetMatchingGroup(s.thfilter,tp,LOCATION_DECK+LOCATION_GRAVE,0,nil)
