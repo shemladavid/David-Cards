@@ -41,7 +41,7 @@ function s.initial_effect(c)
     e2:SetTarget(s.distg)
     e2:SetOperation(s.disop)
     c:RegisterEffect(e2)
-    --Tribute 1 "Old God"; banish 1 card from your opponent's control
+    --Tribute 1 "Old God"; banish 1 card from your opponent's control face-down
     local e3=Effect.CreateEffect(c)
     e3:SetDescription(aux.Stringid(id,1))
     e3:SetCategory(CATEGORY_REMOVE)
@@ -91,6 +91,6 @@ end
 function s.rmop(e,tp,eg,ep,ev,re,r,rp)
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		Duel.Remove(tc,POS_FACEUP,REASON_EFFECT)
+		Duel.Remove(tc,POS_FACEDOWN,REASON_EFFECT)
 	end
 end

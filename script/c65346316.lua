@@ -146,7 +146,7 @@ function s.tdfilter(c)
 end
 function s.milltg(e,tp,eg,ep,ev,re,r,rp,chk)
     if chk==0 then return Duel.IsExistingMatchingCard(Card.IsAbleToRemove,tp,0,LOCATION_ONFIELD+LOCATION_GRAVE,1,nil) end
-	local gy = Duel.GetMatchingGroup(s.tdfilter,tp,LOCATION_GRAVE,0,nil)
+	local gy = Duel.GetMatchingGroup(s.tdfilter,tp,LOCATION_GRAVE+LOCATION_REMOVED,0,nil)
     -- store N = current number of Old God in GY (this is BEFORE the shuffle)
     local N = #gy
     e:SetLabel(N)
@@ -156,7 +156,7 @@ function s.millop(e,tp,eg,ep,ev,re,r,rp)
     local N = e:GetLabel() or 0
     if N<=0 then return end
 
-    local gy = Duel.GetMatchingGroup(s.tdfilter,tp,LOCATION_GRAVE,0,nil)
+    local gy = Duel.GetMatchingGroup(s.tdfilter,tp,LOCATION_GRAVE+LOCATION_REMOVED,0,nil)
 
     local ct_shuffled = 0
     if #gy>0 then
