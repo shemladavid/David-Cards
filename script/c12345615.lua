@@ -270,7 +270,7 @@ function s.repval(e, c)
 end
 
 function s.sunvinefilter(c)
-    return c:IsSetCard(0x574) or c:IsSetCard(0x575) or c:IsSetCard(0x4157) or c:IsSetCard(0x1157) or c:IsSetCard(0x2157) or c:IsSetCard(0xc9) or c:IsCode(511009675)
+    return c:IsSetCard(0x574) or c:IsSetCard(0x575) or c:IsSetCard(0x4157) or c:IsSetCard(0x1157) or c:IsSetCard(0x2157) or c:IsSetCard(0xc9) or c:IsCode(511009675) or c:IsSetCard(SET_RB)
 end
 
 function s.drcon(e,tp,eg,ep,ev,re,r,rp)

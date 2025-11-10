@@ -45,12 +45,13 @@ function s.initial_effect(c)
     e4:SetOperation(s.spop)
     c:RegisterEffect(e4)
 
-    --Tribute 2 monsters; Special Summon 1 Synchro Monster from Extra Deck (treated as Synchro Summon)
+    --Tribute 1 monster; Special Summon 1 Synchro Monster from Extra Deck (treated as Synchro Summon)
     local e5=Effect.CreateEffect(c)
     e5:SetDescription(aux.Stringid(id,0))
     e5:SetCategory(CATEGORY_SPECIAL_SUMMON)
     e5:SetType(EFFECT_TYPE_IGNITION)
     e5:SetRange(LOCATION_FZONE)
+	e5:SetProperty(EFFECT_FLAG_CARD_TARGET)
     e5:SetCost(s.sycost)
     e5:SetTarget(s.sytg)
     e5:SetOperation(s.syop)
@@ -115,8 +116,8 @@ function s.spop(e,tp,eg,ep,ev,re,r,rp)
 end
 
 function s.sycost(e,tp,eg,ep,ev,re,r,rp,chk)
-    if chk==0 then return Duel.CheckReleaseGroupCost(tp,nil,2,false,nil,nil) end
-	local rg=Duel.SelectReleaseGroupCost(tp,nil,2,2,false,nil,nil)
+    if chk==0 then return Duel.CheckReleaseGroupCost(tp,nil,1,false,nil,nil) end
+	local rg=Duel.SelectReleaseGroupCost(tp,nil,1,1,false,nil,nil)
 	Duel.Release(rg,REASON_COST)
 end
 
