@@ -51,22 +51,22 @@ end
 function s.desmtg(e,tp,eg,ep,ev,re,r,rp,chk)
     if chk==0 then return Duel.IsExistingMatchingCard(aux.TRUE,tp,0,LOCATION_MZONE,1,nil) end
 	local sg=Duel.GetMatchingGroup(aux.TRUE,tp,0,LOCATION_MZONE,nil)
-	Duel.SetOperationInfo(0,CATEGORY_DESTROY,sg,#sg,0,0)
+	Duel.SetOperationInfo(0,CATEGORY_REMOVE,sg,#sg,0,0)
 end
 function s.desmop(e,tp,eg,ep,ev,re,r,rp)
     local sg=Duel.GetMatchingGroup(aux.TRUE,tp,0,LOCATION_MZONE,nil)
-	Duel.Destroy(sg,REASON_EFFECT)
+	Duel.Remove(sg,POS_FACEUP,REASON_EFFECT)
 end
 
 function s.dessttg(e,tp,eg,ep,ev,re,r,rp,chk)
     local c=e:GetHandler()
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsSpellTrap,tp,0,LOCATION_ONFIELD,1,c) end
 	local sg=Duel.GetMatchingGroup(Card.IsSpellTrap,tp,0,LOCATION_ONFIELD,c)
-	Duel.SetOperationInfo(0,CATEGORY_DESTROY,sg,#sg,0,0)
+	Duel.SetOperationInfo(0,CATEGORY_REMOVE,sg,#sg,0,0)
 end
 function s.desstop(e,tp,eg,ep,ev,re,r,rp)
     local sg=Duel.GetMatchingGroup(Card.IsSpellTrap,tp,0,LOCATION_ONFIELD,e:GetHandler())
-	Duel.Destroy(sg,REASON_EFFECT)
+	Duel.Remove(sg,POS_FACEUP,REASON_EFFECT)
 end
 
 function s.condition(e,tp,eg,ep,ev,re,r,rp)
