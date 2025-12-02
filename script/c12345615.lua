@@ -282,18 +282,18 @@ function s.drop(e,tp,eg,ep,ev,re,r,rp)
 end
 
 function s.lpcon(e,tp,eg,ep,ev,re,r,rp)
-	return Duel.GetTurnPlayer()==tp and Duel.GetFieldGroupCount(tp,LOCATION_ONFIELD,0)>0
+	return Duel.GetTurnPlayer()==tp and Duel.GetFieldGroupCount(tp,LOCATION_ONFIELD,LOCATION_ONFIELD)>0
 end
 
 function s.lpop(e,tp,eg,ep,ev,re,r,rp)
 	if Duel.IsExistingMatchingCard(s.sunvinefilter,tp,LOCATION_MZONE,0,1,nil) then	
-		local ct=Duel.GetFieldGroupCount(tp,LOCATION_ONFIELD,0)
+		local ct=Duel.GetFieldGroupCount(tp,LOCATION_ONFIELD,LOCATION_ONFIELD)
 		local current_lp = Duel.GetLP(tp)
-		Duel.SetLP(tp, current_lp + ct*500)
+		Duel.SetLP(tp, current_lp + ct*1000)
 	else
-		local ct=Duel.GetFieldGroupCount(tp,LOCATION_ONFIELD,0)
+		local ct=Duel.GetFieldGroupCount(tp,LOCATION_ONFIELD,LOCATION_ONFIELD)
 		if ct>0 then
-			Duel.Recover(tp,ct*500,REASON_EFFECT)
+			Duel.Recover(tp,ct*1000,REASON_EFFECT)
 		end
 	end
 end
