@@ -61,7 +61,7 @@ end
 
 
 function s.spfilter(c,e,tp)
-    return c:IsMonster() and c:IsCanBeSpecialSummoned(e, 0, tp, true, false) and not c:IsCanBeSpecialSummoned(e, 0, tp, false, false)
+    return c:IsMonster() and c:IsCanBeSpecialSummoned(e, 0, tp, true, false)
 end
 
 function s.sptarget(e,tp,eg,ep,ev,re,r,rp,chk)
@@ -79,6 +79,14 @@ function s.spoperation(e,tp,eg,ep,ev,re,r,rp)
         for tc in aux.Next(g) do
             if tc:IsType(TYPE_RITUAL) then
                 Duel.SpecialSummon(tc,SUMMON_TYPE_RITUAL,tp,tp,true,false,POS_FACEUP)
+            elseif tc:IsType(TYPE_FUSION) then
+                Duel.SpecialSummon(tc,SUMMON_TYPE_FUSION,tp,tp,true,false,POS_FACEUP)
+            elseif tc:IsType(TYPE_SYNCHRO) then
+                Duel.SpecialSummon(tc,SUMMON_TYPE_SYNCHRO,tp,tp,true,false,POS_FACEUP)
+            elseif tc:IsType(TYPE_XYZ) then
+                Duel.SpecialSummon(tc,SUMMON_TYPE_XYZ,tp,tp,true,false,POS_FACEUP)
+            elseif tc:IsType(TYPE_LINK) then
+                Duel.SpecialSummon(tc,SUMMON_TYPE_LINK,tp,tp,true,false,POS_FACEUP)
             else
                 Duel.SpecialSummonStep(tc,0,tp,tp,true,false,POS_FACEUP)
             end
