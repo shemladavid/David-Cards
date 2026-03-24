@@ -101,12 +101,12 @@ end
 
 -- Extra Normal Summon filter for Winged Beast
 function s.sumfilter(c)
-	return c:IsRace(RACE_WINGEDBEAST) and c:IsSummonable(true,nil)
+	return c:IsRace(RACE_WINDBEAST) and c:IsSummonable(true,nil)
 end
 
 -- e3: Add this banished card to hand
 function s.thfilter(c,tp)
-	return c:IsFaceup() and c:IsControler(tp) and c:IsRace(RACE_WINGEDBEAST)
+	return c:IsFaceup() and c:IsControler(tp) and c:IsRace(RACE_WINDBEAST)
 end
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsAbleToHand() end
