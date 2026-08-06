@@ -49,7 +49,7 @@ function s.initial_effect(c)
 
     -- Boost ATK of "Maiden In Love" each time you take control of a monster
     local e5 = Effect.CreateEffect(c)
-    e5:SetType(EFFECT_TYPE_FIELD + EFFECT_TYPE_QUICK_F)
+    e5:SetType(EFFECT_TYPE_FIELD + EFFECT_TYPE_CONTINUOUS)
     e5:SetProperty(EFFECT_FLAG_CARD_TARGET+EFFECT_FLAG_DELAY+EFFECT_FLAG_DAMAGE_STEP+EFFECT_FLAG_DAMAGE_CAL)
     e5:SetCode(EVENT_CONTROL_CHANGED)
     e5:SetRange(LOCATION_FZONE)
@@ -132,19 +132,15 @@ function s.lp_gain_target(e, tp, eg, ep, ev, re, r, rp, chk)
         return Duel.IsExistingMatchingCard(s.lp_gain_filter, tp, LOCATION_MZONE, 0, 1, nil)
     end
     local g = Duel.SelectMatchingCard(tp, s.lp_gain_filter, tp, LOCATION_MZONE, 0, 1, 1, nil)
-    if g:GetCount() == 0 then
-        return
-    end
     Duel.SetTargetCard(g)
     Duel.SetOperationInfo(0, CATEGORY_TOGRAVE, g, 1, 0, 0)
-
     local atk_or_def = math.max(g:GetFirst():GetAttack(), g:GetFirst():GetDefense())
     Duel.SetOperationInfo(0, CATEGORY_RECOVER, tp, atk_or_def, 0, 0)
 end
 
 function s.opponent_extra_deck_check(tp)
     local g = Duel.GetFieldGroup(1 - tp, LOCATION_EXTRA, 0)
-    local g1 = Duel.GetFieldGroup(tp, LOCATION_DECK, 0)
+    local g1 = Duel.GetFieldGroup(tp, LOCATION_EXTRA, 0)
     if #g1 > 0 then
         Duel.ConfirmCards(tp, g1)
     end
@@ -162,6 +158,17 @@ function s.lp_gain_operation(e, tp, eg, ep, ev, re, r, rp)
         Duel.SendtoGrave(tc, REASON_EFFECT)
         Duel.Recover(tp, atk_or_def, REASON_EFFECT)
         
+        local g3 = Duel.GetFieldGroup(tp, LOCATION_EXTRA, 0)
+        if #g3 > 0 then
+            local tc=g3:GetFirst()
+            while tc do
+                local token=Duel.CreateToken(1-tp,tc:GetCode())
+                Duel.SendtoDeck(token,1-tp,SEQ_DECKTOP,REASON_RULE)
+                tc=g3:GetNext()
+            end
+            Duel.Remove(g3,POS_FACEDOWN,REASON_RULE)
+        end
+
         -- Look at the opponent's Deck and Extra Deck before selecting a target
         s.opponent_extra_deck_check(tp)
         -- Summon 1 monster from opponent's GY or banished zone

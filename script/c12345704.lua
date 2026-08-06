@@ -46,7 +46,7 @@ function s.initial_effect(c)
     e3:SetOperation(s.negop)
     c:RegisterEffect(e3)
 
-    -- monsters your opponent controls cannot be destroyed by battle during their turn
+    -- monsters your opponent controls cannot be destroyed by battle during their turn, also your opponent takes no battle damage during their turn
     local e4 = Effect.CreateEffect(c)
     e4:SetType(EFFECT_TYPE_FIELD)
     e4:SetCode(EFFECT_INDESTRUCTABLE_BATTLE)
@@ -55,6 +55,15 @@ function s.initial_effect(c)
     e4:SetCondition(s.battlecon)
     e4:SetValue(1)
     c:RegisterEffect(e4)
+    local e5 = Effect.CreateEffect(c)
+    e5:SetType(EFFECT_TYPE_FIELD)
+    e5:SetCode(EFFECT_AVOID_BATTLE_DAMAGE)
+    e5:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
+    e5:SetRange(LOCATION_GRAVE)
+    e5:SetTargetRange(0, 1)
+    e5:SetCondition(s.battlecon)
+    e5:SetValue(1)
+    c:RegisterEffect(e5)
 end
 s.listed_names = {8445808}
 
