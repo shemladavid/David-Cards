@@ -20,8 +20,7 @@ function s.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	Duel.Remove(g,POS_FACEUP,REASON_COST)
 end
 function s.spfilter(c,tp)
-	return c:IsType(TYPE_FUSION) and c:IsFaceup()
-		and c:IsReason(REASON_DESTROY) and c:IsPreviousLocation(LOCATION_MZONE) and c:IsPreviousControler(tp)
+	return c:IsType(TYPE_FUSION) and c:IsFaceup() and c:IsPreviousLocation(LOCATION_MZONE)
 end
 function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsExistingMatchingCard(s.spfilter,tp,0x70,0x70,1,nil,tp) end
@@ -37,14 +36,8 @@ function s.activate(e,tp,eg,ep,ev,re,r,rp)
 	aux.DelayedOperation(tc,PHASE_STANDBY,id,e,tp,
 		function(ag)
 			local sc=ag:GetFirst()
-			if Duel.GetLocationCount(tp,LOCATION_MZONE)>0 and Duel.SpecialSummonStep(sc,0,tp,tp,true,false,POS_FACEUP) then
-				local e1=Effect.CreateEffect(e:GetHandler())
-				e1:SetDescription(3206)
-				e1:SetType(EFFECT_TYPE_SINGLE)
-				e1:SetCode(EFFECT_CANNOT_ATTACK)
-				e1:SetProperty(EFFECT_FLAG_IGNORE_IMMUNE+EFFECT_FLAG_CLIENT_HINT)
-				e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END)
-				sc:RegisterEffect(e1,true)
+			if Duel.GetLocationCount(tp,LOCATION_MZONE)>0 then
+				Duel.SpecialSummonStep(sc,0,tp,tp,true,false,POS_FACEUP)
 			end
 			Duel.SpecialSummonComplete()
 		end,
