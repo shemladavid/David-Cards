@@ -46,24 +46,14 @@ function s.initial_effect(c)
     e3:SetOperation(s.negop)
     c:RegisterEffect(e3)
 
-    -- monsters your opponent controls cannot be destroyed by battle during their turn, also your opponent takes no battle damage during their turn
+    -- monsters your opponent controls cannot declare an attack
     local e4 = Effect.CreateEffect(c)
     e4:SetType(EFFECT_TYPE_FIELD)
-    e4:SetCode(EFFECT_INDESTRUCTABLE_BATTLE)
+    e4:SetCode(EFFECT_CANNOT_ATTACK_ANNOUNCE)
     e4:SetRange(LOCATION_GRAVE)
-    e4:SetTargetRange(0,LOCATION_MZONE)
+    e4:SetTargetRange(0, LOCATION_MZONE)
     e4:SetCondition(s.battlecon)
-    e4:SetValue(1)
     c:RegisterEffect(e4)
-    local e5 = Effect.CreateEffect(c)
-    e5:SetType(EFFECT_TYPE_FIELD)
-    e5:SetCode(EFFECT_AVOID_BATTLE_DAMAGE)
-    e5:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
-    e5:SetRange(LOCATION_GRAVE)
-    e5:SetTargetRange(0, 1)
-    e5:SetCondition(s.battlecon)
-    e5:SetValue(1)
-    c:RegisterEffect(e5)
 end
 s.listed_names = {8445808}
 
@@ -127,5 +117,5 @@ function s.negop(e, tp, eg, ep, ev, re, r, rp)
 end
 
 function s.battlecon(e)
-    return Duel.GetTurnPlayer() ~= e:GetHandlerPlayer() and Duel.IsExistingMatchingCard(aux.FaceupFilter(Card.IsCode, 8445808), e:GetHandlerPlayer(), LOCATION_MZONE, 0, 1, nil)
+    return Duel.IsExistingMatchingCard(aux.FaceupFilter(Card.IsCode, 8445808), e:GetHandlerPlayer(), LOCATION_MZONE, 0, 1, nil)
 end
