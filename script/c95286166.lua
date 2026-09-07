@@ -21,11 +21,9 @@ function s.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)
 	local g=Duel.SelectTarget(tp,s.filter,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil)
 	Duel.SetOperationInfo(0,CATEGORY_TODECK,g,1,0,0)
-	Duel.SetPossibleOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_GRAVE)
 end
 function s.mgfilter(c,e,tp,fusc,mg)
-	return c:IsControler(tp) and c:IsLocation(LOCATION_GRAVE)
-		and (c:GetReason()&(REASON_FUSION|REASON_MATERIAL))==(REASON_FUSION|REASON_MATERIAL) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
+	return c:IsControler(tp) and (c:GetReason()&(REASON_FUSION|REASON_MATERIAL))==(REASON_FUSION|REASON_MATERIAL) and c:IsCanBeSpecialSummoned(e,0,tp,true,false)
 end
 function s.activate(e,tp,eg,ep,ev,re,r,rp)
 	local tc=Duel.GetFirstTarget()
@@ -39,6 +37,6 @@ function s.activate(e,tp,eg,ep,ev,re,r,rp)
 		and not Duel.IsPlayerAffectedByEffect(tp,CARD_BLUEEYES_SPIRIT)
 		and Duel.SelectYesNo(tp,aux.Stringid(id,0)) then
 		Duel.BreakEffect()
-		Duel.SpecialSummon(mg,0,tp,tp,false,false,POS_FACEUP)
+		Duel.SpecialSummon(mg,0,tp,tp,true,false,POS_FACEUP)
 	end
 end

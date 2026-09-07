@@ -558,7 +558,9 @@ if not SealedDuel then
 		return namechange[code][chk][num]
 	end
 	function SealedDuel.op(e,tp,eg,ep,ev,re,r,rp)
+		local sealedOwners={}
 		for _,card in ipairs(selfs) do
+			sealedOwners[card:GetOwner()]=true
 			Duel.SendtoDeck(card,0,-2,REASON_RULE)
 		end
 		local counts={}
@@ -663,16 +665,7 @@ if not SealedDuel then
 						else
 							rarity=3
 						end
-						local code
-						if rarity==3 and packnum==3 then
-							local tempn=3
-							repeat
-								tempn=Duel.GetRandomNumber(1,5)
-							until tempn~=3 and selectpack[tempn]
-							code=pack[tempn][3][Duel.GetRandomNumber(1,#pack[tempn][3])]
-						else
-							code=pack[packnum][rarity][Duel.GetRandomNumber(1,#pack[packnum][rarity])]
-						end
+						local code=pack[packnum][rarity][Duel.GetRandomNumber(1,#pack[packnum][rarity])]
 						local finalcode=SealedDuel.alternate(code,anime)
 						table.insert(groups[p][team],finalcode)
 					end
@@ -705,6 +698,13 @@ if not SealedDuel then
 				end
 			end
 		end
+		-- Give each Sealed Duel owner one new card after setup.
+                for owner=0,1 do
+                        if sealedOwners[owner] then
+                                local bonus=Duel.CreateToken(owner,12345761)
+                                Duel.SendtoHand(bonus,owner,REASON_RULE)
+                        end
+                end
 	end
 	finish_setup()
 end

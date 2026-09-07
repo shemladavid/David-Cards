@@ -1,4 +1,4 @@
---Magician's Mind
+--Magician's Double Hand
 --designed and scripted by Naim
 local s,id=GetID()
 function s.initial_effect(c)

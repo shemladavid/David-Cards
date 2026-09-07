@@ -214,7 +214,9 @@ if not SealedDuel then
 		return namechange[code][chk][num]
 	end
 	function SealedDuel.op(e,tp,eg,ep,ev,re,r,rp)
+		local sealedOwners={}
 		for _,card in ipairs(selfs) do
+			sealedOwners[card:GetOwner()]=true
 			Duel.SendtoDeck(card,0,-2,REASON_RULE)
 		end
 		local counts={}
@@ -367,9 +369,17 @@ if not SealedDuel then
 				end
 			end
 		end
+		-- Give each Sealed Duel owner one new card after setup.
+		for owner=0,1 do
+			if sealedOwners[owner] then
+				local bonus=Duel.CreateToken(owner,12345761)
+				Duel.SendtoHand(bonus,owner,REASON_RULE)
+			end
+		end
 	end
 	finish_setup()
 end
 if not Duel.GetStartingHand then
 	Duel.GetStartingHand=function() return 5 end
 end
+
