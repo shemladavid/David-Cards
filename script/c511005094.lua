@@ -223,7 +223,6 @@ if not SealedDuel then
 		for _,v in ipairs(pack[7][1]) do table.insert(pack[7][3],v) end
 	local namechange={
 		--0 - alternate art, 1 - anime/vg/illegal counterpart
-		[11082056]={ [1]={170000151}; };
 		[22804644]={ [1]={170000150}; };
 		[23265313]={ [1]={511002540}; };
 		[23265594]={ [1]={511002851}; };
@@ -248,7 +247,6 @@ if not SealedDuel then
 		[64500000]={ [1]={511019003,511002853}; };
 		[65622692]={ [1]={511019002,511002852}; };
 		[68005187]={ [1]={513000054}; };
-		[83555667]={ [1]={511000824}; };
 		[86871614]={ [1]={511600007}; };
 		[95286165]={ [1]={511000987}; };
 		[96300057]={ [1]={511002901}; };
@@ -532,7 +530,6 @@ if not SealedDuel then
 		[98558751]={ [1]={511000078}; };
 		[6165656]={ [1]={511001372}; };
 		[25586143]={ [1]={511009350}; };
-		[31829185]={ [1]={511004006}; };
 		[33776843]={ [1]={511002482}; };
 		[41209828]={ [1]={511009025}; };
 		[51644030]={ [1]={511000118}; };
@@ -573,9 +570,11 @@ if not SealedDuel then
 		
 		--pack selection
 		local selectpack={}
-		for _,sel in ipairs({Duel.SelectCardsFromCodes(tp,1,1,false,true,511005095,511005096,511005097,511005098,511005099,511005100,511005101)}) do
-			selectpack[sel[2]]=true
-		end
+		-- for _,sel in ipairs({Duel.SelectCardsFromCodes(tp,1,1,false,true,511005095,511005096,511005097,511005098,511005099,511005100,511005101)}) do
+		-- 	selectpack[sel[2]]=true
+		-- end
+		local selectedPool=Duel.GetRandomNumber(1,7)
+		selectpack[selectedPool]=true
 		
 		--treat as all monster types
 		if true then
@@ -689,7 +688,14 @@ if not SealedDuel then
 				Duel.ShuffleDeck(p)
 				Duel.ShuffleExtra(p)
 				local dtpg=Duel.GetDecktopGroup(p,Duel.GetStartingHand(p))
-				Duel.ConfirmCards(p,dtpg)
+				-- Duel.ConfirmCards(p,dtpg)
+				local previewCodes={}
+				for previewCard in aux.Next(dtpg) do
+					table.insert(previewCodes,previewCard:GetCode())
+				end
+				if #previewCodes>0 then
+					Duel.SelectCardsFromCodes(p,1,1,false,true,table.unpack(previewCodes))
+				end
 				if Duel.SelectYesNo(p,aux.Stringid(id,4)) then
 					Duel.MoveToDeckBottom(dtpg)
 				end

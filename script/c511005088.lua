@@ -229,9 +229,8 @@ if not SealedDuel then
 		
 		-- Pack Selection
 		local selectpack = {}
-		local packs = {511003041, 511003042, 511003043, 511003044}
-		local sel = Duel.SelectCardsFromCodes(tp, 1, 1, true, true, packs[Duel.GetRandomNumber(1, #packs)])
-		selectpack[sel[2]] = true
+		local selectedPool = Duel.GetRandomNumber(1,4)
+		selectpack[selectedPool] = true
 
 		
 		--pack checking
@@ -360,7 +359,14 @@ if not SealedDuel then
 				Duel.ShuffleDeck(p)
 				Duel.ShuffleExtra(p)
 				local dtpg=Duel.GetDecktopGroup(p,Duel.GetStartingHand(p))
-				Duel.ConfirmCards(p,dtpg)
+				-- Duel.ConfirmCards(p,dtpg)
+				local previewCodes={}
+				for previewCard in aux.Next(dtpg) do
+					table.insert(previewCodes,previewCard:GetCode())
+				end
+				if #previewCodes>0 then
+					Duel.SelectCardsFromCodes(p,1,1,false,true,table.unpack(previewCodes))
+				end
 				if Duel.SelectYesNo(p,aux.Stringid(id,4)) then
 					Duel.MoveToDeckBottom(dtpg)
 				end

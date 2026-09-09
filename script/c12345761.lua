@@ -34,6 +34,15 @@ function s.initial_effect(c)
 	e4:SetCondition(s.negmscon)
 	e4:SetOperation(s.negmsop)
 	c:RegisterEffect(e4)
+	--Return during either player's Standby Phase
+    local e5=Effect.CreateEffect(c)
+    e5:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_F)
+    e5:SetCode(EVENT_PHASE+PHASE_STANDBY)
+    e5:SetRange(LOCATION_GRAVE+LOCATION_REMOVED)
+    e5:SetCondition(s.returncon)
+    e5:SetTarget(s.returntg)
+    e5:SetOperation(s.returnop)
+    c:RegisterEffect(e5)
 end
 
 function s.negspcon(e,tp,eg,ep,ev,re,r,rp)
@@ -67,4 +76,28 @@ function s.negmsop(e,tp,eg,ep,ev,re,r,rp)
 	if Duel.NegateEffect(ev) or rc:IsRelateToEffect(re) then
 		Duel.Destroy(rc,REASON_EFFECT)
 	end
+end
+
+function s.returncon(e,tp,eg,ep,ev,re,r,rp)
+    local c=e:GetHandler()
+    return c:IsLocation(LOCATION_GRAVE) or c:IsFaceup()
+end
+
+function s.returntg(e,tp,eg,ep,ev,re,r,rp,chk)
+    local c=e:GetHandler()
+    local owner=c:GetOwner()
+    if chk==0 then
+        return Duel.GetLocationCount(owner,LOCATION_SZONE)>0
+            and c:CheckUniqueOnField(owner)
+    end
+end
+
+function s.returnop(e,tp,eg,ep,ev,re,r,rp)
+    local c=e:GetHandler()
+    local owner=c:GetOwner()
+    if c:IsRelateToEffect(e)
+        and Duel.GetLocationCount(owner,LOCATION_SZONE)>0
+        and c:CheckUniqueOnField(owner) then
+        Duel.MoveToField(c,tp,owner,LOCATION_SZONE,POS_FACEUP,true)
+    end
 end
