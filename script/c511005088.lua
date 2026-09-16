@@ -311,7 +311,7 @@ if not SealedDuel then
 		
 		for p=z,o do
 			for team=1,counts[p] do
-				for i=1,15 do
+				for i=1,30 do
 					local packnum=0
 					--random set among selected sets
 					repeat
