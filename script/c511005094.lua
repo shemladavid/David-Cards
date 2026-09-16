@@ -124,7 +124,7 @@ if not SealedDuel then
             34100324, 12493482, 12206212, 52040216, 47480070, 55821894, 10979723, 91932350, 27927359, 54415063,
             6924874, 75064463, 71209500, 80316585, 68815132, 90219263, 18144507, 81325903, 29228529, 75782277,
             12181376, 712559, 63224564, 17653779, 22359980, 85742772, 58621589, 55608151, 19252988, 77778835,
-            31709826, 90980792, 4335645, 76052811, 102380, 99050989, 62543393, 40320754, 21593977, 99747800,
+            31709826, 90980792, 4335645, 41235896, 102380, 99050989, 62543393, 40320754, 21593977, 99747800,
             65169794, 21770260, 95220856, 42664989, 98494543, 76714458, 77414722, 44095762, 21558682, 65830223,
             93382620, 54704216, 55256016, 1224927, 37507488, 26905245, 66516792, 94119974, 38289717, 51934376,
             37265642, 46457856, 42625254, 13069066, 75390004, 45894482, 94568601, 65287621, 2671330, 38670435,
@@ -417,7 +417,6 @@ if not SealedDuel then
 		[71625222]={ [1]={511002403}; };
 		[73915051]={ [1]={511600290}; };
 		[74137509]={ [1]={511000541}; };
-		[76052811]={ [1]={511015127}; };
 		[76714458]={ [1]={511001785}; };
 		[77585514]={ [1]={513000053}; };
 		[80600490]={ [1]={511003066}; };
@@ -576,8 +575,6 @@ if not SealedDuel then
 		
 		--treat as all monster types
 		if true then
-			Duel.Hint(HINT_OPSELECTED,1-tp,aux.Stringid(id,0)) 
-			Duel.Hint(HINT_OPSELECTED,tp,aux.Stringid(id,0)) 
 			local getrc=Card.GetRace
 			Card.GetRace=function(c)
 				if c:IsMonster() then return 0xfffffff end
@@ -602,8 +599,6 @@ if not SealedDuel then
 
 		-- Treat as all monster attributes
 		if true then
-			Duel.Hint(HINT_OPSELECTED,1-tp,aux.Stringid(id,1)) 
-			Duel.Hint(HINT_OPSELECTED,tp,aux.Stringid(id,1)) 
 			local getattr=Card.GetAttribute
 			Card.GetAttribute=function(c)
 				if c:IsMonster() then return 0x7f end
@@ -629,10 +624,6 @@ if not SealedDuel then
 
 		--anime counterparts select
 		anime=true
-		if anime then
-			Duel.Hint(HINT_OPSELECTED,tp,aux.Stringid(id,2))
-			Duel.Hint(HINT_OPSELECTED,1-tp,aux.Stringid(id,2))
-		end
 			
 		--anime counterparts
 		local groups={}
@@ -685,6 +676,30 @@ if not SealedDuel then
 				end
 				Duel.ShuffleDeck(p)
 				Duel.ShuffleExtra(p)
+				
+				-- Sort Extra Deck
+				local extra_cards={}
+				for tc in aux.Next(Duel.GetFieldGroup(p,LOCATION_EXTRA,0)) do
+					table.insert(extra_cards,tc)
+				end
+				local function extra_level(c)
+					if c:IsType(TYPE_XYZ) then
+						return c:GetRank()
+					elseif c:IsType(TYPE_LINK) then
+						return c:GetLink()
+					end
+					return c:GetLevel()
+				end
+				table.sort(extra_cards,function(a,b)
+					local av,bv=extra_level(a),extra_level(b)
+					if av~=bv then return av<bv end
+					return a:GetCode()<b:GetCode()
+				end)
+				-- Send in reverse so the first sorted card ends up on top.
+				for i=#extra_cards,1,-1 do
+					Duel.SendtoDeck(extra_cards[i],p,SEQ_DECKTOP,REASON_RULE)
+				end
+
 				local dtpg=Duel.GetDecktopGroup(p,Duel.GetStartingHand(p))
 				-- Duel.ConfirmCards(p,dtpg)
 				local previewCodes={}

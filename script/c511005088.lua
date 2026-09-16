@@ -358,6 +358,30 @@ if not SealedDuel then
 				end
 				Duel.ShuffleDeck(p)
 				Duel.ShuffleExtra(p)
+
+				-- Sort Extra Deck
+				local extra_cards={}
+				for tc in aux.Next(Duel.GetFieldGroup(p,LOCATION_EXTRA,0)) do
+					table.insert(extra_cards,tc)
+				end
+				local function extra_level(c)
+					if c:IsType(TYPE_XYZ) then
+						return c:GetRank()
+					elseif c:IsType(TYPE_LINK) then
+						return c:GetLink()
+					end
+					return c:GetLevel()
+				end
+				table.sort(extra_cards,function(a,b)
+					local av,bv=extra_level(a),extra_level(b)
+					if av~=bv then return av<bv end
+					return a:GetCode()<b:GetCode()
+				end)
+				-- Send in reverse so the first sorted card ends up on top.
+				for i=#extra_cards,1,-1 do
+					Duel.SendtoDeck(extra_cards[i],p,SEQ_DECKTOP,REASON_RULE)
+				end
+
 				local dtpg=Duel.GetDecktopGroup(p,Duel.GetStartingHand(p))
 				-- Duel.ConfirmCards(p,dtpg)
 				local previewCodes={}
