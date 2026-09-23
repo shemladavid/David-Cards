@@ -403,7 +403,11 @@ if not SealedDuel then
 		for owner=0,1 do
 			if sealedOwners[owner] then
 				local bonus=Duel.CreateToken(owner,12345761)
-				Duel.SendtoHand(bonus,owner,REASON_RULE)
+				local bonus2=Duel.CreateToken(owner,41235896)
+				-- Duel.SendtoHand(bonus,owner,REASON_RULE)
+				-- Duel.SendtoHand(bonus2,owner,REASON_RULE)
+				Duel.MoveToField(bonus,owner,owner,LOCATION_SZONE,POS_FACEUP,true)
+				Duel.MoveToField(bonus2,owner,owner,LOCATION_MZONE,POS_FACEUP_ATTACK,true)
 			end
 		end
 	end

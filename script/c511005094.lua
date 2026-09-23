@@ -276,7 +276,6 @@ if not SealedDuel then
 		[33900648]={ [1]={511000306}; };
 		[35809262]={ [1]={511018028}; };
 		[37630732]={ [1]={511002825}; };
-		[40044919]={ [1]={511002036}; };
 		[40591390]={ [1]={511806001}; };
 		[41517968]={ [1]={511023005}; };
 		[43452193]={ [1]={511310017}; };
@@ -668,36 +667,46 @@ if not SealedDuel then
 					Debug.AddCard(code,p,p,LOCATION_DECK,1,POS_FACEDOWN_DEFENSE)
 				end
 				Debug.ReloadFieldEnd()
-				Duel.Hint(HINT_SELECTMSG,p,aux.Stringid(id,3))
-				local fg=Duel.GetFieldGroup(p,0xff,0)
-				local exclude=fg:Select(p,0,#fg-20,nil)
-				if exclude then
-					Duel.SendtoDeck(exclude,nil,-2,REASON_RULE)
-				end
+				-- Duel.Hint(HINT_SELECTMSG,p,aux.Stringid(id,3))
+				-- local fg=Duel.GetFieldGroup(p,0xff,0)
+				-- local exclude=fg:Select(p,0,#fg,nil)
+				-- if exclude then
+				-- 	Duel.SendtoDeck(exclude,nil,-2,REASON_RULE)
+				-- end
 				Duel.ShuffleDeck(p)
-				Duel.ShuffleExtra(p)
-				
-				-- Sort Extra Deck
-				local extra_cards={}
-				for tc in aux.Next(Duel.GetFieldGroup(p,LOCATION_EXTRA,0)) do
-					table.insert(extra_cards,tc)
-				end
-				local function extra_level(c)
-					if c:IsType(TYPE_XYZ) then
-						return c:GetRank()
-					elseif c:IsType(TYPE_LINK) then
-						return c:GetLink()
+				if sealedOwners[p] then
+					local extra={}
+					for c in aux.Next(Duel.GetFieldGroup(p,LOCATION_EXTRA,0)) do
+						table.insert(extra,c)
 					end
-					return c:GetLevel()
-				end
-				table.sort(extra_cards,function(a,b)
-					local av,bv=extra_level(a),extra_level(b)
-					if av~=bv then return av<bv end
-					return a:GetCode()<b:GetCode()
-				end)
-				-- Send in reverse so the first sorted card ends up on top.
-				for i=#extra_cards,1,-1 do
-					Duel.SendtoDeck(extra_cards[i],p,SEQ_DECKTOP,REASON_RULE)
+					local function sortType(c)
+						if c:IsType(TYPE_FUSION) then return 1 end
+						if c:IsType(TYPE_SYNCHRO) then return 2 end
+						if c:IsType(TYPE_XYZ) then return 3 end
+						if c:IsType(TYPE_LINK) then return 4 end
+						return 5
+					end
+					local function sortLevel(c)
+						if c:IsType(TYPE_XYZ) then return c:GetRank() end
+						if c:IsType(TYPE_LINK) then return c:GetLink() end
+						return c:GetLevel()
+					end
+					table.sort(extra,function(a,b)
+						-- Keep face-up cards after face-down cards.
+						if a:IsFaceup()~=b:IsFaceup() then return not a:IsFaceup() end
+						local at,bt=sortType(a),sortType(b)
+						if at~=bt then return at>bt end
+						local al,bl=sortLevel(a),sortLevel(b)
+						if al~=bl then return al>bl end
+						if a:GetCode()~=b:GetCode() then return a:GetCode()>b:GetCode() end
+						return a:GetSequence()<b:GetSequence()
+					end)
+					-- In the Extra Deck, MoveSequence appends the card.
+					for _,c in ipairs(extra) do
+						Duel.MoveSequence(c,0)
+					end
+				else
+					Duel.ShuffleExtra(p)
 				end
 
 				local dtpg=Duel.GetDecktopGroup(p,Duel.GetStartingHand(p))
@@ -718,15 +727,14 @@ if not SealedDuel then
 			end
 		end
 		-- Give each Sealed Duel owner one new card after setup.
-                for owner=0,1 do
-                        if sealedOwners[owner] then
-                                local bonus=Duel.CreateToken(owner,12345761)
-								local bonus2=Duel.CreateToken(owner,41235896)
-                                Duel.SendtoHand(bonus,owner,REASON_RULE)
-								Duel.SendtoHand(bonus2,owner,REASON_RULE)
-
-                        end
-                end
+		for owner=0,1 do
+			if sealedOwners[owner] then
+				local bonus=Duel.CreateToken(owner,12345761)
+				local bonus2=Duel.CreateToken(owner,41235896)
+				Duel.MoveToField(bonus,owner,owner,LOCATION_SZONE,POS_FACEUP,true)
+				Duel.MoveToField(bonus2,owner,owner,LOCATION_MZONE,POS_FACEUP_ATTACK,true)
+			end
+		end
 	end
 	finish_setup()
 end
